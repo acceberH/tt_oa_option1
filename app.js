@@ -30,7 +30,7 @@ function handleChange(event){const checkbox=event.target.closest('[data-ingredie
 function go(screen){state.screen=screen;state.directoryOpen=false;render()}
 function startProcessing(){clearTimeout(processTimer);state.screen='processing';state.processingStep=0;render()}
 function scheduleProcessing(){clearTimeout(processTimer);if(state.processingStep<3)processTimer=setTimeout(()=>{state.processingStep+=1;if(state.processingStep>=3){state.screen='editor';render()}else render()},720)}
-function confirmGuide(){const temperature=state.recipe.steps[2].temperature;if(!temperature||!temperature.trim()){state.editorError=true;render();setTimeout(()=>document.querySelector('#temperature')?.focus(),0);return}state.editorError=false;state.guideAttached=true;state.screen='publish';render();setTimeout(()=>toast('Guide confirmed — ready to attach.'),0)}
+function confirmGuide(){const temperature=state.recipe.steps[2].temperature;if(!temperature||!temperature.trim()){state.editorError=true;state.screen='editor';render();setTimeout(()=>document.querySelector('#temperature')?.focus(),0);return}state.editorError=false;state.guideAttached=true;state.screen='publish';render();setTimeout(()=>toast('Guide confirmed — ready to attach.'),0)}
 function publishPost(){state.screen='posted';render()}
 function startClipTimer(){clearInterval(clipTimer);clipTimer=setInterval(()=>{if(!state.clipPlaying||state.screen!=='cook')return;state.clipProgress+=.9;if(state.clipProgress>=100)state.clipProgress=0;const progress=document.querySelector('#clip-progress');if(progress)progress.style.width=`${state.clipProgress}%`},120)}
 function stopClipTimer(){clearInterval(clipTimer);clipTimer=undefined}
