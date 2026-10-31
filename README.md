@@ -1,11 +1,14 @@
 # tt_oa_option1
 This is the online assessment for TikTok AI Product Designer NG
 
-## Mobile prototype shell
+## Follow Along prototype
 
-The first mobile-first prototype is a dependency-free static page:
+Live demo: https://tiktok-follow-along-cooking.acceber02.chatgpt.site
 
-- Open `index.html` directly in a browser, or use VS Code Live Server.
-- The layout is optimized for a 375–430px viewport and includes iPhone safe-area spacing.
-- On wider screens it becomes a centered iPhone-sized preview.
-- Replace the empty-state copy and navigation labels when the product direction is defined.
+This is a dependency-free, mobile-first static prototype for the TikTok “Follow along” cooking flow:
+
+- Creator flow: publish page → simulated AI generation → review/edit → missing-temperature input → preview → confirm → simulated publish.
+- Viewer flow: video → guide overview → ingredients → step-by-step cooking → looping clip controls → timer → completion → optional result sharing.
+- Switch between Creator and Viewer using the prototype switcher at the top of the page.
+- AI generation and publishing are intentionally simulated.
+- The layout is optimized for a 375–430px viewport, includes iPhone safe-area spacing, and becomes a centered phone preview on wider screens.
