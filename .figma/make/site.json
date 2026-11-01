@@ -1,0 +1,10 @@
+{
+  "description": "A TikTok-style cooking app guides viewers through recipes with scalable ingredients and timers, then lets creators share their results with original recipe attribution.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

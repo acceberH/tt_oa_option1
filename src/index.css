@@ -1,0 +1,1437 @@
+@import 'tailwindcss';
+
+@font-face {
+  font-family: 'SF Pro:Semibold';
+  src: url('https://static.figma.com/font/SF-Pro_1') format('woff2');
+  font-style: normal;
+  font-weight: 590;
+}
+
+@font-face {
+  font-family: 'TikTok Sans:Bold';
+  src: url('https://static.figma.com/font/TikTokSans_opsz_slnt_wdth_wght__1') format('woff2');
+  font-style: normal;
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: 'TikTok Sans:Medium';
+  src: url('https://static.figma.com/font/TikTokSans_opsz_slnt_wdth_wght__1') format('woff2');
+  font-style: normal;
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: 'TikTok Sans:Regular';
+  src: url('https://static.figma.com/font/TikTokSans_opsz_slnt_wdth_wght__1') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    min-width: 320px;
+    overflow: hidden;
+    background: #000;
+  }
+
+  button {
+    cursor: pointer;
+  }
+}
+
+:root {
+  font-family: 'TikTok Sans:Regular', Arial, sans-serif;
+  color: #161823;
+  font-variation-settings: 'wdth' 100;
+}
+
+.overview-screen {
+  min-height: 100dvh;
+  overflow-y: auto;
+  background: #000;
+  color: #fff;
+}
+
+.overview-hero {
+  position: relative;
+  height: min(52.5dvh, 470px);
+  min-height: 400px;
+}
+
+.overview-hero > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.overview-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, .25), rgba(0, 0, 0, .05) 55%, #000);
+}
+
+.overview-back {
+  position: absolute;
+  top: 62px;
+  left: 20px;
+  z-index: 1;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+}
+
+.overview-back img {
+  width: 24px;
+  height: 24px;
+}
+
+.overview-title {
+  position: absolute;
+  right: 24px;
+  bottom: 22px;
+  left: 24px;
+}
+
+.overview-title h1 {
+  font-family: 'TikTok Sans:Bold';
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.overview-title p {
+  margin-top: 2px;
+  font-size: 15px;
+}
+
+.overview-content {
+  padding: 0 24px 42px;
+}
+
+.app-button {
+  min-height: 48px;
+  border-radius: 9px;
+  padding: 10px 15px;
+  font-family: 'TikTok Sans:Medium';
+  font-size: 15px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.app-button-primary {
+  background: #fe2c55;
+  color: #fff;
+}
+
+.app-button-secondary {
+  background: #f1f1f2;
+  color: #161823;
+}
+
+.overview-content > .app-button {
+  width: 100%;
+}
+
+.overview-description {
+  margin-top: 20px;
+  color: #b4b4b8;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.recipe-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.recipe-stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.recipe-stats span {
+  color: #a5a5ab;
+  font-size: 13px;
+}
+
+.recipe-stats strong {
+  font-family: 'TikTok Sans:Bold';
+  font-size: 20px;
+}
+
+.ingredients-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+}
+
+.ingredients-heading h2 {
+  font-family: 'TikTok Sans:Bold';
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.servings-stepper {
+  display: flex;
+  height: 44px;
+  align-items: center;
+}
+
+.servings-stepper button {
+  width: 44px;
+  height: 44px;
+  font-size: 24px;
+}
+
+.servings-stepper button:disabled {
+  opacity: .35;
+}
+
+.servings-stepper span {
+  min-width: 64px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.overview-ingredients {
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.cook-screen {
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #fff;
+  color: #161823;
+}
+
+.light-header {
+  position: fixed;
+  z-index: 10;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  height: 109px;
+  align-items: flex-end;
+  justify-content: center;
+  border-bottom: .4px solid #dddddf;
+  background: #fff;
+  padding: 0 10px 18px;
+}
+
+.status-bar {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  height: 54px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 37px 0 56px;
+  color: #161823;
+}
+
+.status-time {
+  font-family: 'SF Pro:Semibold';
+  font-size: 17px;
+  font-weight: 590;
+  line-height: 22px;
+}
+
+.status-levels {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.battery {
+  position: relative;
+  display: block;
+  width: 27px;
+  height: 13px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  opacity: .95;
+}
+
+.battery > span {
+  position: absolute;
+  inset: 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.battery > img {
+  position: absolute;
+  top: 4px;
+  right: -3px;
+}
+
+.status-bar-light {
+  color: #fff;
+}
+
+.light-header h1 {
+  font-family: 'TikTok Sans:Bold';
+  font-size: 17.3px;
+  font-weight: 700;
+}
+
+.back-button {
+  position: absolute;
+  bottom: 9px;
+  left: 10px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+}
+
+.back-button img {
+  width: 25px;
+  height: 25px;
+}
+
+.cook-content {
+  position: fixed;
+  top: 109px;
+  right: 0;
+  bottom: 106px;
+  left: 0;
+  overflow-y: auto;
+  padding: 10px 24px 24px;
+}
+
+.recipe-eyebrow {
+  color: #73747b;
+  font-size: 14px;
+}
+
+.step-count {
+  margin-top: 12px;
+  font-family: 'TikTok Sans:Bold';
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.active-step {
+  min-height: 142px;
+  margin-top: 14px;
+  border: 1px solid #fe2c55;
+  padding: 14px 16px;
+}
+
+.active-step h2 {
+  font-family: 'TikTok Sans:Bold';
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.active-step p {
+  margin-top: 8px;
+  font-size: 17px;
+  line-height: 1.3;
+}
+
+.footage-placeholder {
+  display: flex;
+  width: 100%;
+  min-height: 150px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+  background: #302d28;
+  padding: 16px;
+  color: #fff;
+  text-align: left;
+}
+
+.footage-placeholder strong,
+.cook-content h3 {
+  font-family: 'TikTok Sans:Bold';
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.footage-placeholder span {
+  font-size: 14px;
+}
+
+.cook-content h3 {
+  margin-top: 14px;
+}
+
+.steps-list {
+  margin-top: 13px;
+  color: #73747b;
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.steps-list li {
+  display: grid;
+  grid-template-columns: 16px auto;
+}
+
+.steps-list .current {
+  color: #73747b;
+}
+
+.view-timer {
+  width: 100%;
+  height: 44px;
+  margin-top: 56px;
+  border-radius: 9px;
+  background: #f1f1f2;
+  font-family: 'TikTok Sans:Medium';
+  font-size: 15px;
+}
+
+.cook-actions {
+  position: fixed;
+  z-index: 9;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: grid;
+  height: 106px;
+  grid-template-columns: minmax(120px, 161px) 1fr;
+  gap: 10px;
+  background: #fff;
+  padding: 10px 24px 48px;
+}
+
+.timer-step-content {
+  padding-top: 11px;
+}
+
+.timer-recipe-title {
+  font-family: 'TikTok Sans:Bold';
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.timer-step-label {
+  margin-top: 14px;
+  color: #73747b;
+  font-size: 15px;
+}
+
+.compact-step {
+  display: flex;
+  min-height: 84px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  background: #f5f5f5;
+  padding: 14px 16px;
+}
+
+.compact-step strong {
+  font-family: 'TikTok Sans:Bold';
+  font-size: 16px;
+}
+
+.compact-step span {
+  color: #73747b;
+  font-size: 15px;
+}
+
+.compact-active {
+  min-height: 112px;
+  margin-top: 16px;
+}
+
+.compact-active h2 {
+  font-size: 17px;
+}
+
+.compact-active p {
+  color: #73747b;
+  font-size: 15px;
+}
+
+.timer-card {
+  margin-top: 16px;
+  background: #f5f5f5;
+  padding: 16px;
+}
+
+.timer-time {
+  display: block;
+  font-family: 'TikTok Sans:Bold';
+  font-size: 40px;
+  line-height: 1;
+  color: #000;
+}
+
+.timer-card > p {
+  margin-top: 12px;
+  color: #73747b;
+  font-size: 14px;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.timer-controls button {
+  height: 48px;
+  flex: 1;
+  border-radius: 9px;
+  background: #f1f1f2;
+  font-family: 'TikTok Sans:Medium';
+  font-size: 15px;
+}
+
+.timer-controls button + button {
+  max-width: 92px;
+  background: #e3e3e5;
+}
+
+.timer-finished {
+  box-shadow: inset 0 0 0 1px #fe2c55;
+}
+
+.timer-hint {
+  margin-top: 16px;
+  color: #73747b;
+  font-size: 14px;
+}
+
+.sheet-layer {
+  position: fixed;
+  z-index: 30;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(0, 0, 0, .4);
+}
+
+.ingredients-sheet {
+  position: relative;
+  width: 100%;
+  max-height: min(570px, 82dvh);
+  overflow-y: auto;
+  border-radius: 18px 18px 0 0;
+  background: #fff;
+  padding: 35px 24px 12px;
+}
+
+.sheet-grip {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  width: 36px;
+  height: 4px;
+  transform: translateX(-50%);
+  border-radius: 2px;
+  background: #bfbfc4;
+}
+
+.sheet-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sheet-title-row h2 {
+  font-family: 'TikTok Sans:Bold';
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.sheet-title-row button {
+  width: 30px;
+  height: 30px;
+  font-size: 30px;
+  line-height: 24px;
+}
+
+.ingredients-sheet > p {
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.sheet-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 21px 0 28px;
+}
+
+.sheet-items div {
+  display: flex;
+  min-height: 76px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: #f5f5f5;
+  padding: 12px 16px;
+}
+
+.sheet-items strong {
+  font-family: 'TikTok Sans:Bold';
+  font-size: 16px;
+}
+
+.sheet-items span {
+  font-size: 14px;
+}
+
+.ingredients-sheet > .app-button {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 16px;
+}
+
+.complete-content {
+  padding: 128px 24px 40px;
+}
+
+.complete-content h2 {
+  font-family: 'TikTok Sans:Bold';
+  font-size: 34px;
+  font-weight: 700;
+}
+
+.complete-content > p {
+  margin: 10px 0 16px;
+  color: #73747b;
+  font-size: 17px;
+}
+
+.complete-content img {
+  width: 100%;
+  height: 230px;
+  object-fit: cover;
+}
+
+.complete-content h3 {
+  margin-top: 18px;
+  font-family: 'TikTok Sans:Bold';
+  font-size: 22px;
+}
+
+.complete-content .app-button {
+  width: 100%;
+}
+
+.complete-content .app-button + .app-button {
+  margin-top: 16px;
+}
+
+.published-confirmation {
+  position: absolute;
+  z-index: 25;
+  top: 108px;
+  right: 24px;
+  left: 24px;
+  height: 48px;
+  border-radius: 8px;
+  background: #fff;
+  padding: 14px 16px;
+  color: #161823;
+  font-size: 15px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, .14);
+}
+
+.media-picker,
+.posting-settings {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #fff;
+  color: #161823;
+}
+
+.picker-title {
+  position: absolute;
+  top: 67px;
+  right: 24px;
+  left: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  font-size: 18px;
+}
+
+.picker-title button {
+  justify-self: start;
+  width: 24px;
+  height: 24px;
+  text-align: left;
+}
+
+.picker-title span {
+  justify-self: center;
+  white-space: nowrap;
+}
+
+.picker-tabs {
+  position: absolute;
+  top: 120px;
+  right: 24px;
+  left: 24px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.media-grid {
+  position: absolute;
+  top: 160px;
+  right: 0;
+  bottom: 166px;
+  left: 0;
+  display: grid;
+  grid-auto-rows: 140px;
+  grid-template-columns: repeat(3, 1fr);
+  align-content: start;
+  gap: 2px;
+  overflow: hidden;
+  background: #f4f4f4;
+}
+
+.media-grid > * {
+  position: relative;
+  min-width: 0;
+  height: 140px;
+  overflow: hidden;
+  text-align: left;
+}
+
+.selected-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.selected-media span,
+.placeholder-media span {
+  position: absolute;
+  right: 8px;
+  bottom: 23px;
+  left: 8px;
+  color: #fff;
+  font-size: 12px;
+}
+
+.local-media,
+.placeholder-media {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 2px;
+  background: #d6d4d0;
+  padding: 12px 8px 23px;
+  color: #73747b;
+  font-size: 12px;
+}
+
+.local-media input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.local-media strong {
+  color: #161823;
+  font-size: 14px;
+}
+
+.placeholder-media span {
+  color: #73747b;
+}
+
+.picker-footer {
+  position: absolute;
+  right: 24px;
+  bottom: 46px;
+  left: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.picker-footer .app-button {
+  width: 172px;
+}
+
+.media-preview {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #000;
+  color: #fff;
+}
+
+.preview-media {
+  position: absolute;
+  top: 190px;
+  right: 0;
+  left: 0;
+  height: min(520px, calc(100dvh - 376px));
+}
+
+.preview-media img,
+.preview-media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-back {
+  position: absolute;
+  z-index: 4;
+  top: 66px;
+  left: 20px;
+  width: 24px;
+  height: 24px;
+}
+
+.preview-back img {
+  width: 24px;
+  height: 24px;
+}
+
+.add-sound {
+  position: absolute;
+  z-index: 4;
+  top: 62px;
+  left: 50%;
+  display: flex;
+  width: 158px;
+  height: 42px;
+  transform: translateX(-50%);
+  align-items: center;
+  gap: 8px;
+  border-radius: 7px;
+  background: #292929;
+  padding-left: 14px;
+  font-size: 15px;
+}
+
+.add-sound img {
+  width: 18px;
+  height: 18px;
+}
+
+.preview-toolbar {
+  position: absolute;
+  z-index: 4;
+  top: 126px;
+  right: 16px;
+  display: flex;
+  width: 44px;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.preview-toolbar button {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+}
+
+.preview-toolbar img {
+  width: 24px;
+  height: 24px;
+}
+
+.preview-toolbar .text-tool {
+  font-size: 26px;
+}
+
+.preview-next {
+  position: absolute;
+  right: 24px;
+  bottom: 46px;
+  width: 172px;
+}
+
+.settings-back {
+  position: absolute;
+  top: 66px;
+  left: 20px;
+  width: 24px;
+  height: 24px;
+}
+
+.settings-back img {
+  width: 24px;
+  height: 24px;
+}
+
+.posting-settings > textarea {
+  position: absolute;
+  top: 115px;
+  left: 20px;
+  width: calc(100% - 164px);
+  height: 150px;
+  resize: none;
+  border: 0;
+  outline: 0;
+  background: #fff;
+  font-family: 'TikTok Sans:Regular';
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.settings-cover {
+  position: absolute;
+  top: 115px;
+  right: 22px;
+  width: 98px;
+  height: 150px;
+  overflow: hidden;
+  background: #302d28;
+}
+
+.settings-cover img,
+.settings-cover video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.settings-cover::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 42px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, .65));
+  content: "";
+}
+
+.settings-cover span {
+  position: absolute;
+  z-index: 1;
+  bottom: 14px;
+  left: 5px;
+  color: #fff;
+  font-size: 12px;
+}
+
+.caption-tools {
+  position: absolute;
+  top: 285px;
+  left: 20px;
+  font-size: 14px;
+}
+
+.settings-list {
+  position: absolute;
+  top: 328px;
+  right: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-row {
+  display: flex;
+  min-height: 55px;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-top: 12px;
+  text-align: left;
+}
+
+.settings-row:has(small) {
+  min-height: 72px;
+}
+
+.settings-row > span {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.settings-row strong {
+  font-family: 'TikTok Sans:Regular';
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.settings-row small {
+  color: #73747b;
+  font-size: 13px;
+}
+
+.settings-row img {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+}
+
+.posting-note {
+  position: absolute;
+  right: 20px;
+  bottom: 141px;
+  left: 20px;
+  color: #73747b;
+  font-size: 13px;
+}
+
+.posting-actions {
+  position: absolute;
+  right: 20px;
+  bottom: 45px;
+  left: 20px;
+  display: grid;
+  grid-template-columns: 1fr 180px;
+  align-items: center;
+}
+
+.posting-actions > button:first-child {
+  justify-self: start;
+  padding-left: 35px;
+  font-size: 16px;
+}
+
+.recipe-preview-layer {
+  position: fixed;
+  z-index: 40;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(0, 0, 0, .45);
+}
+
+.recipe-preview-card {
+  position: relative;
+  width: 100%;
+  border-radius: 18px 18px 0 0;
+  background: #fff;
+  padding: 40px 24px 34px;
+}
+
+.recipe-preview-card > button {
+  position: absolute;
+  top: 12px;
+  right: 20px;
+  width: 32px;
+  height: 32px;
+  font-size: 30px;
+}
+
+.recipe-preview-card > img {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+}
+
+.recipe-preview-card > div {
+  padding: 18px 0;
+}
+
+.recipe-preview-card span,
+.recipe-preview-card p {
+  color: #73747b;
+  font-size: 14px;
+}
+
+.recipe-preview-card h2 {
+  margin: 4px 0 8px;
+  font-family: 'TikTok Sans:Bold';
+  font-size: 24px;
+}
+
+.recipe-preview-card .app-button {
+  width: 100%;
+}
+
+@media (min-width: 700px) {
+  .overview-content,
+  .cook-content,
+  .cook-actions,
+  .ingredients-sheet,
+  .complete-content,
+  .recipe-preview-card {
+    padding-right: max(24px, calc((100vw - 640px) / 2));
+    padding-left: max(24px, calc((100vw - 640px) / 2));
+  }
+}
+
+@layer components {
+  .icon-button {
+    display: grid;
+    min-height: 36px;
+    min-width: 36px;
+    place-items: center;
+    border-radius: 999px;
+  }
+
+  .icon-button:focus-visible,
+  .action-button:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
+  }
+}
+
+@media (min-width: 768px) {
+  main {
+    background-position: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Prototype viewport: keep the design review surface at the source frame size. */
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  overflow: auto;
+  background: #d9d9dc;
+}
+
+#root {
+  position: relative;
+  width: 414px;
+  height: 896px;
+  min-height: 0;
+  overflow: hidden;
+  transform: translateZ(0);
+  border-radius: 30px;
+  background: #000;
+  box-shadow: 0 24px 72px rgba(17, 18, 24, .22), 0 0 0 1px rgba(17, 18, 24, .08);
+}
+
+#root > * {
+  width: 100%;
+  height: 100%;
+}
+
+@media (min-width: 601px) {
+  .overview-content,
+  .cook-content,
+  .cook-actions,
+  .ingredients-sheet,
+  .complete-content,
+  .recipe-preview-card {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    display: block;
+    overflow: hidden;
+    background: #000;
+  }
+
+  #root {
+    width: 100vw;
+    height: 100dvh;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
+.creator-ai-screen,
+.creator-editor-screen {
+  position: relative;
+  min-height: 100%;
+  overflow-y: auto;
+  background: #fff;
+  color: #161823;
+}
+
+.creator-ai-back {
+  position: absolute;
+  top: 62px;
+  left: 20px;
+  width: 34px;
+  height: 34px;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.creator-ai-copy {
+  padding: 170px 24px 0;
+}
+
+.creator-ai-kicker,
+.creator-editor-header span {
+  color: #fe2c55;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+
+.creator-ai-copy h1 {
+  max-width: 330px;
+  margin-top: 10px;
+  font-family: 'TikTok Sans:Bold';
+  font-size: 34px;
+  line-height: 1.08;
+}
+
+.creator-ai-copy p,
+.creator-ai-note,
+.creator-editor-body > p {
+  color: #73747b;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.creator-ai-copy p {
+  max-width: 310px;
+  margin-top: 18px;
+}
+
+.creator-ai-list {
+  display: grid;
+  gap: 0;
+  margin: 54px 24px 0;
+  border-top: 1px solid #dedee1;
+}
+
+.creator-ai-row {
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 1px solid #dedee1;
+  font-size: 16px;
+}
+
+.creator-ai-dot {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid #fe2c55;
+  border-radius: 50%;
+  color: #fe2c55;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.creator-ai-note {
+  margin: 24px;
+}
+
+.creator-editor-header {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 109px;
+  border-bottom: 1px solid #dedee1;
+  background: rgba(255, 255, 255, .96);
+  padding: 54px 20px 12px;
+}
+
+.creator-editor-header button {
+  width: 34px;
+  height: 34px;
+}
+
+.creator-editor-header button img {
+  width: 24px;
+  height: 24px;
+}
+
+.creator-editor-header strong {
+  display: block;
+  margin-top: 2px;
+  font-family: 'TikTok Sans:Bold';
+  font-size: 17px;
+}
+
+.creator-editor-header em {
+  border-radius: 4px;
+  background: #f1f1f2;
+  padding: 6px 8px;
+  color: #73747b;
+  font-size: 12px;
+  font-style: normal;
+}
+
+.creator-editor-body {
+  padding: 28px 24px 124px;
+}
+
+.creator-editor-body > h1 {
+  font-family: 'TikTok Sans:Bold';
+  font-size: 32px;
+  line-height: 1.1;
+}
+
+.creator-editor-body > p {
+  margin-top: 8px;
+}
+
+.creator-editor-section {
+  margin-top: 28px;
+}
+
+.creator-editor-section h2 {
+  margin-bottom: 14px;
+  font-family: 'TikTok Sans:Bold';
+  font-size: 19px;
+}
+
+.creator-editor-section h2 small {
+  color: #73747b;
+  font-family: 'TikTok Sans:Regular';
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.creator-editor-section label,
+.creator-editor-input label {
+  display: block;
+  margin: 10px 0 6px;
+  color: #73747b;
+  font-size: 13px;
+}
+
+.creator-editor-section input,
+.creator-editor-input input {
+  width: 100%;
+  height: 44px;
+  border: 1px solid #cfcfd3;
+  border-radius: 6px;
+  background: #fff;
+  padding: 0 12px;
+  color: #161823;
+  font-size: 15px;
+}
+
+.creator-editor-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.creator-editor-line {
+  border-bottom: 1px solid #dedee1;
+  padding: 12px 0;
+  font-size: 15px;
+}
+
+.creator-editor-step {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  border-bottom: 1px solid #dedee1;
+  font-size: 15px;
+}
+
+.creator-editor-step > b {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 50%;
+  background: #f1f1f2;
+  font-size: 13px;
+}
+
+.creator-editor-missing {
+  grid-template-columns: 28px 1fr;
+  align-items: start;
+  padding: 12px 0;
+}
+
+.creator-editor-input {
+  grid-column: 2;
+  border-left: 2px solid #fe2c55;
+  padding-left: 12px;
+}
+
+.creator-editor-input strong {
+  color: #fe2c55;
+  font-size: 13px;
+}
+
+.creator-editor-input p,
+.creator-editor-input small {
+  display: block;
+  margin-top: 6px;
+  color: #73747b;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.creator-editor-input small {
+  color: #fe2c55;
+}
+
+.creator-editor-footer {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: 1fr 1.45fr;
+  gap: 10px;
+  padding: 10px 24px 34px;
+  background: #fff;
+}
+
+.creator-editor-footer button {
+  min-height: 48px;
+  border-radius: 9px;
+  font-family: 'TikTok Sans:Medium';
+  font-size: 15px;
+}
+
+.creator-editor-secondary {
+  background: #f1f1f2;
+}
+
+.creator-editor-primary {
+  background: #fe2c55;
+  color: #fff;
+}

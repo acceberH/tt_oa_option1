@@ -1,0 +1,9 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="53" height="53" viewBox="0 0 53 53" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path id="Arc" d="M53 26.5C53 41.1355 41.1355 53 26.5 53C11.8645 53 0 41.1355 0 26.5C0 11.8645 11.8645 0 26.5 0C41.1355 0 53 11.8645 53 26.5ZM1.56111 26.5C1.56111 40.2734 12.7266 51.4389 26.5 51.4389C40.2734 51.4389 51.4389 40.2734 51.4389 26.5C51.4389 12.7266 40.2734 1.56111 26.5 1.56111C12.7266 1.56111 1.56111 12.7266 1.56111 26.5Z" fill="url(#paint0_linear_0_217)"/>
+<defs>
+<linearGradient id="paint0_linear_0_217" x1="5.3" y1="4.41667" x2="26.5" y2="46.8167" gradientUnits="userSpaceOnUse">
+<stop stop-color="#59BDF3"/>
+<stop offset="1" stop-color="#6ADFC8"/>
+</linearGradient>
+</defs>
+</svg>
