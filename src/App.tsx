@@ -1,4 +1,8 @@
 import { useEffect, useMemo, useState } from "react"
+import mixImage from "../assets/cooking/mix.jpg"
+import spreadImage from "../assets/cooking/spread.jpg"
+import toastImage from "../assets/cooking/toast.jpg"
+import finishImage from "../assets/cooking/finish.jpg"
 
 const asset = (name: string) => `/assets/${name}`
 const PINK = "#fe2c55"
@@ -43,13 +47,7 @@ const stepTitles = [
   "Serve warm",
 ]
 
-const videoTimes = [
-  "00:00–00:08",
-  "00:08–00:24",
-  "00:24–00:31",
-  "00:31–00:43",
-  "00:43–00:48",
-]
+const stepImages = [asset("012d6.png"), mixImage, spreadImage, toastImage, finishImage]
 
 const amount = (value: number) =>
   Number.isInteger(value) ? String(value) : String(value).replace(".5", "½")
@@ -114,6 +112,41 @@ function PrimaryButton({
   )
 }
 
+function StepPreview({ step, overview = false }: { step: number; overview?: boolean }) {
+  const [playing, setPlaying] = useState(true)
+  const [replay, setReplay] = useState(0)
+
+  useEffect(() => {
+    setPlaying(true)
+    setReplay(0)
+  }, [step])
+
+  return (
+    <aside className={`step-pip ${overview ? "step-pip-overview" : ""}`} aria-label={`Step ${step + 1} visual preview`}>
+      <div className="step-pip-media" key={`${step}-${replay}`}>
+        <img
+          src={stepImages[step]}
+          alt={`${stepTitles[step]} visual preview`}
+          className={playing ? "step-pip-image" : "step-pip-image is-paused"}
+        />
+        <button
+          type="button"
+          className="step-pip-toggle"
+          onClick={() => setPlaying((value) => !value)}
+          aria-label={playing ? "Pause visual preview" : "Play visual preview"}
+        >
+          {playing ? "Ⅱ" : "▶"}
+        </button>
+        <span className="step-pip-progress" style={{ animationPlayState: playing ? "running" : "paused" }} />
+      </div>
+      <div className="step-pip-caption">
+        <span>Step {step + 1} visual</span>
+        <button type="button" onClick={() => { setReplay((value) => value + 1); setPlaying(true) }} aria-label="Replay visual preview">↻</button>
+      </div>
+    </aside>
+  )
+}
+
 function Feed({
   onOpenRecipe,
   onCreate,
@@ -153,15 +186,15 @@ function Feed({
       />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.18)_0%,transparent_26%,transparent_58%,rgba(0,0,0,0.92)_100%)]" />
 
-      <header className="absolute inset-x-0 top-[54px] z-10 flex h-10 items-center justify-between px-4">
-        <button className="icon-button mt-1" aria-label="Open live videos">
+      <header className="absolute inset-x-0 top-[54px] z-10 grid h-10 grid-cols-[36px_1fr_36px] items-center px-4">
+        <button className="icon-button" aria-label="Open live videos">
           <img
             src={asset("72fa4.svg")}
             alt=""
             className="h-[32.6px] w-[31.6px]"
           />
         </button>
-        <div className="flex items-start gap-[30px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+        <div className="flex h-10 items-center justify-center gap-[30px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
           {(["following", "for-you"] as const).map((item) => {
             const active = feed === item
             return (
@@ -169,7 +202,7 @@ function Feed({
                 key={item}
                 type="button"
                 onClick={() => setFeed(item)}
-                className={`relative flex min-h-8 flex-col items-center gap-[5px] text-[18px] ${
+                className={`relative flex h-10 flex-col items-center justify-center text-[18px] leading-[23px] ${
                   active
                     ? "font-['TikTok_Sans:Bold'] font-bold text-white"
                     : "font-['TikTok_Sans:Medium'] font-medium text-white/65"
@@ -180,12 +213,12 @@ function Feed({
                 {item === "following" && !active && (
                   <span className="absolute -right-[7px] -top-px size-2 rounded-full bg-[#fe2c55]" />
                 )}
-                {active && <span className="h-[3px] w-[29px] bg-white" />}
+                {active && <span className="absolute bottom-0 h-[3px] w-[29px] bg-white" />}
               </button>
             )
           })}
         </div>
-        <button className="icon-button mt-1" aria-label="Search">
+        <button className="icon-button" aria-label="Search">
           <img
             src={asset("9030d.svg")}
             alt=""
@@ -423,6 +456,7 @@ function Overview({
           <li>{amount(servings / 2)} tbsp chopped parsley</li>
         </ul>
       </div>
+      <StepPreview step={0} overview />
     </main>
   )
 }
@@ -612,10 +646,6 @@ function CookScreen({
               </h2>
               <p>{instructions[step]}</p>
             </div>
-            <button type="button" className="footage-placeholder">
-              <strong>Current step video · {stepTitles[step]}</strong>
-              <span>{videoTimes[step]} · Tap to replay / loop</span>
-            </button>
             <h3>Your steps</h3>
             <ol className="steps-list">
               {stepTitles.map((title, index) => (
@@ -647,6 +677,7 @@ function CookScreen({
           {step === 4 ? "Finish cooking" : "Next step"}
         </PrimaryButton>
       </div>
+      <StepPreview step={step} />
       {sheetOpen && (
         <IngredientsSheet
           servings={servings}
