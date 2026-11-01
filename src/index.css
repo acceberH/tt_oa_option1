@@ -1227,6 +1227,38 @@ body {
   background: #d9d9dc;
 }
 
+/* Keep native scrolling, without desktop scrollbar chrome around the phone. */
+html,
+body,
+#root,
+.overview-screen,
+.cook-content,
+.ingredients-sheet,
+.creator-editor-screen {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar,
+.overview-screen::-webkit-scrollbar,
+.cook-content::-webkit-scrollbar,
+.ingredients-sheet::-webkit-scrollbar,
+.creator-editor-screen::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.overview-screen,
+.cook-content,
+.ingredients-sheet,
+.creator-editor-screen {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
 #root {
   position: relative;
   width: 414px;
