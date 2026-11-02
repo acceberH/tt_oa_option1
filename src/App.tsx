@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 
 const assets = "/assets"
+const CLIP_SECONDS = 8
 
 function StatusBar({ light = false }: { light?: boolean }) {
   return (
@@ -538,6 +539,11 @@ function CookScreen({
   timerSeconds,
   setTimerSeconds,
   recipe,
+  clipProgress,
+  clipPlaying,
+  onToggleClip,
+  onReplayClip,
+  onSeekClip,
 }: {
   servings: number
   currentStep: number
@@ -550,6 +556,11 @@ function CookScreen({
   timerSeconds: number
   setTimerSeconds: (seconds: number) => void
   recipe: CreatorRecipe
+  clipProgress: number
+  clipPlaying: boolean
+  onToggleClip: () => void
+  onReplayClip: () => void
+  onSeekClip: (value: number) => void
 }) {
   const [timerOpen, setTimerOpen] = useState(false)
   const [miniVideoOpen, setMiniVideoOpen] = useState(true)
@@ -621,11 +632,16 @@ function CookScreen({
             aria-label={`Expand video for step ${currentStep + 1}`}
           >
             <img
+              key={currentStep}
               src={`${assets}/${stepImages[currentStep]}`}
               alt={`Cooking demonstration for ${recipe.steps[currentStep].title}`}
+              className="step-video-image"
+              style={{ transform: `scale(1.06) translateY(-${clipProgress * 0.025}%)` }}
             />
             <span>Step {currentStep + 1}</span>
           </button>
+          <button type="button" className="mini-play-toggle" onClick={onToggleClip} aria-label={clipPlaying ? "Pause step clip" : "Play step clip"}>{clipPlaying ? "Ⅱ" : "▶"}</button>
+          <div className="mini-video-progress" aria-hidden="true"><span style={{ width: `${clipProgress}%` }} /></div>
           <button
             className="mini-close"
             onClick={() => setMiniVideoOpen(false)}
@@ -654,8 +670,11 @@ function CookScreen({
       {expandedVideo && (
         <div className="expanded-video" role="dialog" aria-modal="true">
           <img
+            key={currentStep}
             src={`${assets}/${stepImages[currentStep]}`}
             alt={`Cooking demonstration for ${recipe.steps[currentStep].title}`}
+            className="step-video-image"
+            style={{ transform: `scale(1.06) translateY(-${clipProgress * 0.025}%)` }}
           />
           <div className="expanded-video-shade" />
           <IconButton
@@ -663,10 +682,16 @@ function CookScreen({
             label="Close video"
             onClick={() => setExpandedVideo(false)}
           />
-          <div>
+          <div className="expanded-video-copy">
             <small>STEP {currentStep + 1}</small>
             <h2>{recipe.steps[currentStep].title}</h2>
             <p>{getStepInstruction(currentStep, servings, recipe)}</p>
+            <div className="expanded-video-controls">
+              <button type="button" onClick={onToggleClip} aria-label={clipPlaying ? "Pause step clip" : "Play step clip"}>{clipPlaying ? "Ⅱ" : "▶"}</button>
+              <input type="range" min="0" max="100" step="1" value={Math.round(clipProgress)} onChange={(event) => onSeekClip(Number(event.target.value))} aria-label="Step clip progress" style={{ "--clip-progress": `${clipProgress}%` } as React.CSSProperties} />
+              <span>{`0:${String(Math.floor(clipProgress * CLIP_SECONDS / 100)).padStart(2, "0")}`}</span>
+              <button type="button" onClick={onReplayClip} aria-label="Replay step clip">↻</button>
+            </div>
           </div>
         </div>
       )}
@@ -1081,6 +1106,8 @@ function App() {
     false,
   ])
   const [currentStep, setCurrentStep] = useState(0)
+  const [clipProgress, setClipProgress] = useState(0)
+  const [clipPlaying, setClipPlaying] = useState(true)
   const [timerState, setTimerState] = useState<TimerState>("ready")
   const [timerSeconds, setTimerSeconds] = useState(480)
   const timerEndAt = useRef<number | null>(null)
@@ -1119,6 +1146,23 @@ function App() {
     const interval = window.setInterval(update, 250)
     return () => window.clearInterval(interval)
   }, [timerState])
+
+  useEffect(() => {
+    setClipProgress(0)
+    setClipPlaying(true)
+  }, [currentStep])
+
+  useEffect(() => {
+    if (screen !== "cook" || !clipPlaying) return
+    let lastTick = performance.now()
+    const interval = window.setInterval(() => {
+      const now = performance.now()
+      const elapsed = now - lastTick
+      lastTick = now
+      setClipProgress((current) => (current + elapsed / (CLIP_SECONDS * 10)) % 100)
+    }, 50)
+    return () => window.clearInterval(interval)
+  }, [screen, clipPlaying])
 
   const changeTimerState = (next: TimerState) => {
     if (next === "running") {
@@ -1192,6 +1236,11 @@ function App() {
         timerSeconds={timerSeconds}
         setTimerSeconds={setTimerSeconds}
         recipe={creatorRecipe}
+        clipProgress={clipProgress}
+        clipPlaying={clipPlaying}
+        onToggleClip={() => setClipPlaying((value) => !value)}
+        onReplayClip={() => { setClipProgress(0); setClipPlaying(true) }}
+        onSeekClip={setClipProgress}
       />
     )
   }

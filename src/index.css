@@ -935,6 +935,11 @@
   object-fit: cover;
 }
 
+.step-video-image {
+  transition: transform 120ms linear;
+  will-change: transform;
+}
+
 .mini-expand > span {
   position: absolute;
   right: 0;
@@ -945,6 +950,36 @@
   background: rgba(0, 0, 0, 0.55);
   text-align: left;
   font-size: 13px;
+  padding-right: 38px;
+}
+
+.mini-play-toggle {
+  position: absolute;
+  z-index: 2;
+  right: 6px;
+  bottom: 6px;
+  width: 30px;
+  height: 30px;
+  color: #fff;
+  font-size: 18px;
+  text-shadow: 0 1px 3px #000;
+}
+
+.mini-video-progress {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, .5);
+  pointer-events: none;
+}
+
+.mini-video-progress > span {
+  display: block;
+  height: 100%;
+  background: #fff;
 }
 
 .mini-close {
@@ -1011,11 +1046,62 @@
   filter: invert(1);
 }
 
-.expanded-video > div:last-child {
+.expanded-video-copy {
   position: absolute;
   right: 24px;
   bottom: calc(38px + env(safe-area-inset-bottom));
   left: 24px;
+}
+
+.expanded-video-controls {
+  display: flex;
+  height: 40px;
+  align-items: center;
+  gap: 10px;
+  margin-top: 17px;
+}
+
+.expanded-video-controls button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  place-items: center;
+  color: #fff;
+  font-size: 21px;
+  text-shadow: 0 1px 3px #000;
+}
+
+.expanded-video-controls > span {
+  color: #fff;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.expanded-video-controls input[type="range"] {
+  width: 100%;
+  height: 4px;
+  flex: 1;
+  appearance: none;
+  border-radius: 4px;
+  background: linear-gradient(to right, #fff var(--clip-progress), rgba(255, 255, 255, .5) var(--clip-progress));
+  cursor: pointer;
+}
+
+.expanded-video-controls input[type="range"]::-webkit-slider-thumb {
+  width: 12px;
+  height: 12px;
+  appearance: none;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.expanded-video-controls input[type="range"]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
 }
 
 .expanded-video small {
