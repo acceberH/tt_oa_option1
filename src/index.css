@@ -2013,3 +2013,72 @@ body::-webkit-scrollbar,
   color: #fff;
   font-size: 30px;
 }
+
+/* iPhone status bar: 54 px above the app's 55 px navigation row. */
+.status-bar {
+  position: absolute;
+  z-index: 20;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  height: 54px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 37px 0 56px;
+  color: #161823;
+  pointer-events: none;
+}
+
+.status-bar-light { color: #fff; }
+
+.status-time {
+  font-family: 'SF Pro:Semibold', Arial, sans-serif;
+  font-size: 17px;
+  font-weight: 590;
+  line-height: 22px;
+}
+
+.status-levels {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.status-levels > img:first-child { width: 19.2px; height: 12.3px; }
+.status-levels > img:nth-child(2) { width: 17.2px; height: 12.4px; }
+
+.status-battery {
+  position: relative;
+  display: block;
+  width: 25px;
+  height: 13px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+}
+
+.status-battery > span {
+  position: absolute;
+  inset: 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.status-battery > img {
+  position: absolute;
+  top: 4px;
+  right: -3px;
+  width: 1.3px;
+  height: 4px;
+}
+
+.feed-header { top: 54px; height: 40px; }
+.app-header { height: 109px; padding-bottom: 12px; }
+.scroll-content { top: 109px; }
+.hero-back { top: 62px; }
+.picker-header { height: 109px; padding-bottom: 12px; }
+.camera-viewfinder { top: 65px; }
+.camera-close { top: 82px; }
+.camera-tools { top: 84px; }
+.post-media .icon-button { top: 62px; }
+.published-screen > header { height: 109px; }

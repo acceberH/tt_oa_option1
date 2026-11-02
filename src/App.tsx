@@ -2,6 +2,19 @@ import { useEffect, useMemo, useRef, useState } from "react"
 
 const assets = "/assets"
 
+function StatusBar({ light = false }: { light?: boolean }) {
+  return (
+    <div className={`status-bar ${light ? "status-bar-light" : ""}`} aria-hidden="true">
+      <span className="status-time">9:41</span>
+      <div className="status-levels">
+        <img src={`${assets}/${light ? "5b990.svg" : "370b7.svg"}`} alt="" />
+        <img src={`${assets}/${light ? "13dc8.svg" : "ad90a.svg"}`} alt="" />
+        <span className="status-battery"><span /><img src={`${assets}/${light ? "474fd.svg" : "23a5a.svg"}`} alt="" /></span>
+      </div>
+    </div>
+  )
+}
+
 type Screen = "home" | "recipe" | "ingredients" | "cook" | "complete" | "post-picker" | "post-preview" | "published" | "creator-picker" | "creator-publish" | "creator-ai" | "creator-editor" | "creator-published"
 
 type TimerState = "ready" | "running" | "paused" | "finished"
@@ -111,6 +124,7 @@ function AppHeader({
 }) {
   return (
     <header className="app-header">
+      <StatusBar />
       <IconButton src="126d9.svg" label="Go back" onClick={onBack} />
       <h1>{title}</h1>
       <div className="header-trailing">{trailing}</div>
@@ -178,6 +192,7 @@ function HomeScreen({ onOpenRecipe, onCreate, recipeLinked, creatorPost, creator
 
   return (
     <main className="home-screen">
+      <StatusBar light />
       <div className="home-image" />
       <div className="home-scrim" />
 
@@ -300,6 +315,7 @@ function RecipeScreen({
 }) {
   return (
     <main className="recipe-screen">
+      <StatusBar light />
       <div className="recipe-hero">
         <img src={`${assets}/012d6.png`} alt="Garlic butter toast" />
         <IconButton
@@ -755,6 +771,7 @@ function PostPicker({
   if (cameraOpen) {
     return (
       <main className="camera-screen">
+        <StatusBar light />
         <div className="camera-viewfinder">
           <img src={`${assets}/012d6.png`} alt="Camera preview" />
         </div>
@@ -799,6 +816,7 @@ function PostPicker({
 
   return (
     <main className="light-screen picker-screen">
+      <StatusBar />
       <header className="picker-header">
         <IconButton src="fc709.svg" label="Close" onClick={onClose} />
         <button>
@@ -861,6 +879,7 @@ function PostPreview({
 }) {
   return (
     <main className="post-preview">
+      <StatusBar light />
       <div className="post-media">
         <img src={`${assets}/012d6.png`} alt="Selected garlic butter toast" />
         <IconButton src="126d9.svg" label="Back" onClick={onBack} />
@@ -902,6 +921,7 @@ function PostPreview({
 function PublishedScreen({ onDone, recipeTitle }: { onDone: () => void; recipeTitle: string }) {
   return (
     <main className="published-screen">
+      <StatusBar light />
       <img src={`${assets}/012d6.png`} alt="Published garlic butter toast" />
       <div className="published-shade" />
       <header>
@@ -967,6 +987,7 @@ function CreatorPublish({
   const [audience, setAudience] = useState("Everyone")
   return (
     <main className="post-preview creator-publish">
+      <StatusBar light />
       <div className="post-media">
         <img src={`${assets}/012d6.png`} alt="Garlic butter toast video cover" />
         <IconButton src="126d9.svg" label="Back" onClick={onBack} />
@@ -1039,7 +1060,7 @@ function CreatorEditor({
 }
 
 function CreatorPublished({ recipeAdded, onViewPost }: { recipeAdded: boolean; onViewPost: () => void }) {
-  return <main className="published-screen creator-published"><img src={`${assets}/012d6.png`} alt="Garlic butter toast" /><div className="published-shade" /><section><div className="success-mark">✓</div><h1>Post published</h1><p>{recipeAdded ? "Your recipe is attached. Viewers can cook along." : "This video has no recipe attached."}</p><PrimaryButton onClick={onViewPost}>View post</PrimaryButton><small>Publishing is simulated.</small></section></main>
+  return <main className="published-screen creator-published"><StatusBar light /><img src={`${assets}/012d6.png`} alt="Garlic butter toast" /><div className="published-shade" /><section><div className="success-mark">✓</div><h1>Post published</h1><p>{recipeAdded ? "Your recipe is attached. Viewers can cook along." : "This video has no recipe attached."}</p><PrimaryButton onClick={onViewPost}>View post</PrimaryButton><small>Publishing is simulated.</small></section></main>
 }
 
 function App() {
