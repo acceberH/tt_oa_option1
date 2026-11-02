@@ -1,89 +1,119 @@
-import { useEffect, useMemo, useState } from "react"
-import mixImage from "../assets/cooking/mix.jpg"
-import spreadImage from "../assets/cooking/spread.jpg"
-import toastImage from "../assets/cooking/toast.jpg"
-import finishImage from "../assets/cooking/finish.jpg"
+import { useEffect, useMemo, useRef, useState } from "react"
 
-const asset = (name: string) => `/assets/${name}`
-const PINK = "#fe2c55"
-const TIMER_SECONDS = 8 * 60
+const assets = "/assets"
 
-type Screen =
-  | "feed"
-  | "overview"
-  | "cook"
-  | "complete"
-  | "result-picker"
-  | "result-preview"
-  | "result-settings"
-  | "creator-picker"
-  | "creator-preview"
-  | "creator-settings"
-  | "creator-ai"
-  | "creator-editor"
+type Screen = "home" | "recipe" | "ingredients" | "cook" | "complete" | "post-picker" | "post-preview" | "published" | "creator-picker" | "creator-publish" | "creator-ai" | "creator-editor" | "creator-published"
 
-type FeedMode = "viewer" | "creator" | "result"
+type TimerState = "ready" | "running" | "paused" | "finished"
 
-const actions = [
-  { id: "like", icon: "4859b.svg", label: "3.1M", name: "Like" },
-  { id: "comment", icon: "b24de.svg", label: "45.4K", name: "Comments" },
-  { id: "save", icon: "33eb9.svg", label: "233.8K", name: "Save" },
-  { id: "share", icon: "b75cc.svg", label: "183.9K", name: "Share" },
-] as const
-
-const navItems = [
-  { id: "home", icon: "982c0.svg", label: "Home" },
-  { id: "friends", icon: "f68b2.svg", label: "Friends", badge: "5" },
-  { id: "create", icon: "0a357.svg", label: "Create" },
-  { id: "inbox", icon: "b0bf4.svg", label: "Inbox", badge: "23" },
-  { id: "profile", icon: "68946.svg", label: "Profile" },
-] as const
-
-const stepTitles = [
-  "Slice the bread",
-  "Make the garlic butter",
-  "Spread generously",
-  "Bake until golden",
-  "Serve warm",
+const stepImages = [
+  "3075b.png",
+  "77b18.png",
+  "3f37f.png",
+  "5689b.png",
+  "dab51.png",
 ]
 
-const stepImages = [asset("012d6.png"), mixImage, spreadImage, toastImage, finishImage]
+const steps = [
+  {
+    title: "Slice the bread",
+    instruction: "Cut 2 thick slices of sourdough.",
+  },
+  {
+    title: "Make the garlic butter",
+    instruction:
+      "Mix 2 tbsp softened butter, 2 minced garlic cloves and 1 tbsp chopped parsley until evenly combined.",
+  },
+  {
+    title: "Spread generously",
+    instruction: "Cover the bread right to the edges with the garlic butter.",
+  },
+  {
+    title: "Bake until golden",
+    instruction:
+      "Bake at 200°C until the edges are golden and the top is crisp.",
+  },
+  {
+    title: "Serve warm",
+    instruction: "Let the toast cool slightly, then serve while warm.",
+  },
+]
 
-const amount = (value: number) =>
-  Number.isInteger(value) ? String(value) : String(value).replace(".5", "½")
+const getStepInstruction = (index: number, servings: number, recipe?: CreatorRecipe) => {
+  const edited = recipe?.steps[index]?.instruction
+  if (edited && edited !== steps[index].instruction) {
+    if (index === 3 && recipe?.temperature) {
+      return /\d+\s*°[CF]/.test(edited)
+        ? edited.replace(/\d+\s*°[CF]/, recipe.temperature)
+        : `${edited} Set the oven to ${recipe.temperature}.`
+    }
+    return edited
+  }
+  if (index === 0) {
+    return `Cut ${servings} thick ${
+      servings === 1 ? "slice" : "slices"
+    } of sourdough.`
+  }
+  if (index === 1) {
+    const parsley = servings * 0.5
+    return `Mix ${servings} tbsp softened butter, ${servings} minced garlic ${
+      servings === 1 ? "clove" : "cloves"
+    } and ${parsley} tbsp chopped parsley until evenly combined.`
+  }
+  if (index === 3 && recipe?.temperature) return steps[index].instruction.replace("200°C", recipe.temperature)
+  return steps[index].instruction
+}
 
-function StatusBar({ light = false }: { light?: boolean }) {
+const baseIngredients = [
+  { name: "Sourdough", amount: 1, unit: "slice" },
+  { name: "Softened butter", amount: 1, unit: "tbsp" },
+  { name: "Garlic", amount: 1, unit: "clove" },
+  { name: "Parsley", amount: 0.5, unit: "tbsp chopped" },
+]
+
+const pluralize = (value: number, unit: string) => {
+  if (value === 1) return unit
+  if (unit === "slice") return "slices"
+  if (unit === "clove") return "cloves"
+  return unit
+}
+
+function IconButton({
+  src,
+  label,
+  onClick,
+  className = "",
+}: {
+  src: string
+  label: string
+  onClick: () => void
+  className?: string
+}) {
   return (
-    <div
-      className={`status-bar ${light ? "status-bar-light" : ""}`}
-      aria-hidden="true"
+    <button
+      className={`icon-button ${className}`}
+      onClick={onClick}
+      aria-label={label}
     >
-      <span className="status-time">9:41</span>
-      <div className="status-levels">
-        <img src={asset(light ? "5b990.svg" : "370b7.svg")} alt="" />
-        <img src={asset(light ? "13dc8.svg" : "ad90a.svg")} alt="" />
-        <span className="battery">
-          <span />
-          <img src={asset(light ? "474fd.svg" : "23a5a.svg")} alt="" />
-        </span>
-      </div>
-    </div>
+      <img src={`${assets}/${src}`} alt="" />
+    </button>
   )
 }
 
-function Header({ title, onBack }: { title: string onBack: () => void }) {
+function AppHeader({
+  title,
+  onBack,
+  trailing,
+}: {
+  title: string
+  onBack: () => void
+  trailing?: React.ReactNode
+}) {
   return (
-    <header className="light-header">
-      <StatusBar />
-      <button
-        type="button"
-        onClick={onBack}
-        className="back-button"
-        aria-label="Back"
-      >
-        <img src={asset("b46c4.svg")} alt="" />
-      </button>
+    <header className="app-header">
+      <IconButton src="126d9.svg" label="Go back" onClick={onBack} />
       <h1>{title}</h1>
+      <div className="header-trailing">{trailing}</div>
     </header>
   )
 }
@@ -91,1224 +121,1109 @@ function Header({ title, onBack }: { title: string onBack: () => void }) {
 function PrimaryButton({
   children,
   onClick,
-  secondary = false,
-  className = "",
+  variant = "primary",
+  disabled = false,
 }: {
   children: React.ReactNode
   onClick: () => void
-  secondary?: boolean
-  className?: string
+  variant?: "primary" | "secondary"
+  disabled?: boolean
 }) {
   return (
     <button
-      type="button"
+      className={`primary-button ${variant}`}
       onClick={onClick}
-      className={`app-button ${
-        secondary ? "app-button-secondary" : "app-button-primary"
-      } ${className}`}
+      disabled={disabled}
     >
       {children}
     </button>
   )
 }
 
-function StepPreview({ step, overview = false }: { step: number; overview?: boolean }) {
-  const [playing, setPlaying] = useState(true)
-  const [replay, setReplay] = useState(0)
-
-  useEffect(() => {
-    setPlaying(true)
-    setReplay(0)
-  }, [step])
-
-  return (
-    <aside className={`step-pip ${overview ? "step-pip-overview" : ""}`} aria-label={`Step ${step + 1} visual preview`}>
-      <div className="step-pip-media" key={`${step}-${replay}`}>
-        <img
-          src={stepImages[step]}
-          alt={`${stepTitles[step]} visual preview`}
-          className={playing ? "step-pip-image" : "step-pip-image is-paused"}
-        />
-        <button
-          type="button"
-          className="step-pip-toggle"
-          onClick={() => setPlaying((value) => !value)}
-          aria-label={playing ? "Pause visual preview" : "Play visual preview"}
-        >
-          {playing ? "Ⅱ" : "▶"}
-        </button>
-        <span className="step-pip-progress" style={{ animationPlayState: playing ? "running" : "paused" }} />
-      </div>
-      <div className="step-pip-caption">
-        <span>Step {step + 1} visual</span>
-        <button type="button" onClick={() => { setReplay((value) => value + 1); setPlaying(true) }} aria-label="Replay visual preview">↻</button>
-      </div>
-    </aside>
-  )
-}
-
-function Feed({
-  onOpenRecipe,
-  onCreate,
-  mode,
-  recipeLinked,
-  confirmation,
-  publishedCaption,
-}: {
-  onOpenRecipe: () => void
-  onCreate: () => void
-  mode: FeedMode
-  recipeLinked: boolean
-  confirmation: string
-  publishedCaption: string
-}) {
-  const [feed, setFeed] = useState<"following" | "for-you">("for-you")
-  const [activeNav, setActiveNav] = useState("home")
+function HomeScreen({ onOpenRecipe, onCreate, recipeLinked, creatorPost, creatorCaption }: { onOpenRecipe: () => void; onCreate: () => void; recipeLinked: boolean; creatorPost: boolean; creatorCaption: string }) {
+  const [liked, setLiked] = useState(false)
+  const [saved, setSaved] = useState(false)
   const [followed, setFollowed] = useState(false)
-  const [selectedActions, setSelectedActions] = useState<string[]>([])
 
-  const toggleAction = (id: string) => {
-    if (id === "comment") return
-    setSelectedActions((current) =>
-      current.includes(id)
-        ? current.filter((item) => item !== id)
-        : [...current, id],
-    )
-  }
+  const actions = [
+    {
+      icon: "4859b.svg",
+      label: liked ? "3.1M+" : "3.1M",
+      active: liked,
+      action: () => setLiked((value) => !value),
+      name: "Like",
+    },
+    {
+      icon: "b24de.svg",
+      label: "45.4K",
+      active: false,
+      action: () => undefined,
+      name: "Comments",
+    },
+    {
+      icon: "33eb9.svg",
+      label: saved ? "233.8K+" : "233.8K",
+      active: saved,
+      action: () => setSaved((value) => !value),
+      name: "Save",
+    },
+    {
+      icon: "b75cc.svg",
+      label: "183.9K",
+      active: false,
+      action: () => undefined,
+      name: "Share",
+    },
+  ]
 
   return (
-    <main className="relative min-h-dvh overflow-hidden bg-black text-white">
-      <StatusBar light />
-      <img
-        src={asset("012d6.png")}
-        alt="Crispy garlic butter toast on a dark plate"
-        className="absolute inset-0 h-full w-full object-cover object-center"
-      />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.18)_0%,transparent_26%,transparent_58%,rgba(0,0,0,0.92)_100%)]" />
+    <main className="home-screen">
+      <div className="home-image" />
+      <div className="home-scrim" />
 
-      <header className="absolute inset-x-0 top-[54px] z-10 grid h-10 grid-cols-[36px_1fr_36px] items-center px-4">
-        <button className="icon-button" aria-label="Open live videos">
-          <img
-            src={asset("72fa4.svg")}
-            alt=""
-            className="h-[32.6px] w-[31.6px]"
-          />
-        </button>
-        <div className="flex h-10 items-center justify-center gap-[30px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
-          {(["following", "for-you"] as const).map((item) => {
-            const active = feed === item
-            return (
-              <button
-                key={item}
-                type="button"
-                onClick={() => setFeed(item)}
-                className={`relative flex h-10 flex-col items-center justify-center text-[18px] leading-[23px] ${
-                  active
-                    ? "font-['TikTok_Sans:Bold'] font-bold text-white"
-                    : "font-['TikTok_Sans:Medium'] font-medium text-white/65"
-                }`}
-                style={{ fontVariationSettings: '"wdth" 100' }}
-              >
-                {item === "following" ? "Following" : "For you"}
-                {item === "following" && !active && (
-                  <span className="absolute -right-[7px] -top-px size-2 rounded-full bg-[#fe2c55]" />
-                )}
-                {active && <span className="absolute bottom-0 h-[3px] w-[29px] bg-white" />}
-              </button>
-            )
-          })}
-        </div>
-        <button className="icon-button" aria-label="Search">
-          <img
-            src={asset("9030d.svg")}
-            alt=""
-            className="h-[23.748px] w-[23px]"
-          />
-        </button>
+      <header className="feed-header">
+        <img className="feed-live" src={`${assets}/72fa4.svg`} alt="" />
+        <nav aria-label="Feed">
+          <button>
+            Following <span className="notification-dot" />
+          </button>
+          <button className="active">For you</button>
+        </nav>
+        <img src={`${assets}/9030d.svg`} alt="" />
       </header>
 
-      {confirmation && (
-        <div className="published-confirmation">✓&nbsp; {confirmation}</div>
-      )}
-
-      <aside className="absolute bottom-[100px] right-[9px] z-10 flex flex-col items-center gap-[27px]">
+      <aside className="social-actions" aria-label="Video actions">
         <button
-          type="button"
+          className="creator-avatar"
           onClick={() => setFollowed((value) => !value)}
-          className="relative size-[49px]"
-          aria-label={followed ? "Unfollow @ellacooks" : "Follow @ellacooks"}
-          aria-pressed={followed}
+          aria-label={followed ? "Unfollow ellacooks" : "Follow ellacooks"}
         >
-          <img src={asset("6e325.png")} alt="" className="size-[49px]" />
-          {!followed && (
-            <img
-              src={asset("58dea.svg")}
-              alt=""
-              className="absolute left-[13.5px] top-[38px] size-[22px]"
-            />
-          )}
+          <img src={`${assets}/6e325.png`} alt="@ellacooks" />
+          <span className={followed ? "followed" : ""}>
+            {followed ? <img src={`${assets}/7355a.svg`} alt="" /> : "+"}
+          </span>
         </button>
-        <div className="flex flex-col items-center gap-5">
-          {actions.map((action) => {
-            const selected = selectedActions.includes(action.id)
-            return (
-              <button
-                key={action.id}
-                type="button"
-                onClick={() => toggleAction(action.id)}
-                className="action-button flex w-[48px] flex-col items-center"
-                aria-label={action.name}
-                aria-pressed={action.id === "comment" ? undefined : selected}
-              >
-                <img
-                  src={asset(action.icon)}
-                  alt=""
-                  className={`size-[34px] transition-transform duration-200 ${
-                    selected ? "scale-110" : ""
-                  }`}
-                />
-                <span className="font-['TikTok_Sans:Medium'] text-[13px] font-medium">
-                  {mode === "viewer" ? action.label : "0"}
-                </span>
-              </button>
-            )
-          })}
+        {actions.map((item) => (
           <button
-            className="relative mt-[1px] size-[49px]"
-            aria-label="Open sound"
+            className={`social-action ${item.active ? "active" : ""}`}
+            onClick={item.action}
+            key={item.name}
+            aria-label={item.name}
+            aria-pressed={item.active}
           >
-            <img
-              src={asset("2cbd0.png")}
-              alt=""
-              className="size-[49px] animate-[spin_8s_linear_infinite]"
-            />
-            <img
-              src={asset("d9fbe.png")}
-              alt=""
-              className="absolute left-[10px] top-[10px] size-[29px] rounded-full"
-            />
+            <img src={`${assets}/${item.icon}`} alt="" />
+            <span>{item.label}</span>
           </button>
-        </div>
+        ))}
+        <button className="music-disc" aria-label="Open sound">
+          <img src={`${assets}/2cbd0.png`} alt="" />
+          <img src={`${assets}/d9fbe.png`} alt="" />
+        </button>
       </aside>
 
-      <section className="absolute bottom-[99px] left-[13px] z-10 w-[min(282px,calc(100%-76px))]">
-        {(mode === "viewer" || recipeLinked) && (
-          <button
-            type="button"
-            onClick={onOpenRecipe}
-            className="mb-[21px] flex h-8 items-center gap-1 rounded bg-black/40 px-2 pr-3 font-['TikTok_Sans:Medium'] text-sm font-medium"
-          >
-            <img src={asset("6f651.svg")} alt="" className="size-[19px]" />
-            {mode === "result" ? "Original recipe" : "Cook with me"}
-          </button>
-        )}
-        <div className="flex flex-col gap-[11px]">
-          <p className="font-['TikTok_Sans:Medium'] text-[18px] font-medium">
-            {mode === "result" ? "@you" : "@ellacooks"}
-          </p>
-          <div className="font-['TikTok_Sans:Regular'] text-base leading-normal text-white/90">
-            {mode === "viewer" && (
-              <>
-                <p>Crispy garlic butter toast</p>
-                <p>#easyrecipe #cookwithme</p>
-              </>
-            )}
-            {mode === "creator" &&
-              publishedCaption
-                .split("\n")
-                .map((line, index) => <p key={`${line}-${index}`}>{line}</p>)}
-            {mode === "result" &&
-              publishedCaption
-                .split("\n")
-                .map((line, index) => <p key={`${line}-${index}`}>{line}</p>)}
-          </div>
-        </div>
+      <section className="video-copy">
+        {recipeLinked && <button className="cook-entry" onClick={onOpenRecipe}>
+          <img src={`${assets}/6f651.svg`} alt="" />
+          Cook with me
+        </button>}
+        <strong>{creatorPost ? "@you" : "@ellacooks"}</strong>
+        <p>{creatorPost ? creatorCaption : <>Crispy garlic butter toast 🧄<br />#easyrecipe #cookwithme</>}</p>
       </section>
 
-      <nav className="absolute inset-x-0 bottom-0 z-20 flex h-[87px] items-start border-t-[0.5px] border-[#333] bg-black pt-[7px]">
-        {navItems.map((item) => {
-          const active = activeNav === item.id
-          if (item.id === "create") {
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => {
-                  setActiveNav(item.id)
-                  onCreate()
-                }}
-                className="flex h-[54px] flex-1 items-center justify-center"
-              >
-                <img
-                  src={asset(item.icon)}
-                  alt=""
-                  className="h-[31.25px] w-[46.25px]"
-                />
-              </button>
-            )
-          }
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setActiveNav(item.id)}
-              className="relative flex h-[54px] flex-1 flex-col items-center justify-end gap-0.5 pb-1.5"
-            >
-              <img
-                src={asset(item.icon)}
-                alt=""
-                className={`size-[25px] ${active ? "" : "opacity-80"}`}
-              />
-              <span
-                className={`font-['TikTok_Sans:Medium'] text-[10px] ${
-                  active ? "text-white" : "text-white/65"
-                }`}
-              >
-                {item.label}
-              </span>
-              {"badge" in item && (
-                <span className="absolute left-[calc(50%+7px)] top-0 flex h-[17px] min-w-[17px] items-center justify-center rounded-[9px] bg-[#fe2c55] px-1 text-sm">
-                  {item.badge}
-                </span>
-              )}
-            </button>
-          )
-        })}
+      <nav className="bottom-nav" aria-label="Primary navigation">
+        {[
+          ["982c0.svg", "Home", ""],
+          ["f68b2.svg", "Friends", "5"],
+          ["0a357.svg", "Create", ""],
+          ["b0bf4.svg", "Inbox", "23"],
+          ["53901.svg", "Profile", ""],
+        ].map(([icon, label, badge]) => (
+          <button className={label === "Home" ? "selected" : ""} key={label} onClick={label === "Create" ? onCreate : undefined} disabled={label !== "Create"}>
+            <span>
+              <img src={`${assets}/${icon}`} alt="" />
+              {badge && <b>{badge}</b>}
+            </span>
+            {label !== "Create" && <small>{label}</small>}
+          </button>
+        ))}
       </nav>
     </main>
   )
 }
 
-function Overview({
+function ServingControl({
+  servings,
+  onChange,
+  dark = false,
+}: {
+  servings: number
+  onChange: (servings: number) => void
+  dark?: boolean
+}) {
+  return (
+    <div className={`serving-control ${dark ? "dark" : ""}`}>
+      <button
+        onClick={() => onChange(Math.max(1, servings - 1))}
+        disabled={servings === 1}
+        aria-label="Decrease servings"
+      >
+        −
+      </button>
+      <span>
+        {servings} {servings === 1 ? "serving" : "servings"}
+      </span>
+      <button
+        onClick={() => onChange(Math.min(4, servings + 1))}
+        disabled={servings === 4}
+        aria-label="Increase servings"
+      >
+        +
+      </button>
+    </div>
+  )
+}
+
+function RecipeScreen({
   servings,
   setServings,
   onBack,
   onStart,
+  recipe,
+  author,
 }: {
   servings: number
   setServings: (value: number) => void
   onBack: () => void
   onStart: () => void
+  recipe: CreatorRecipe
+  author: string
 }) {
   return (
-    <main className="overview-screen">
-      <div className="overview-hero">
-        <img src={asset("012d6.png")} alt="Garlic butter toast" />
-        <div className="overview-gradient" />
-        <StatusBar light />
-        <button
-          type="button"
+    <main className="recipe-screen">
+      <div className="recipe-hero">
+        <img src={`${assets}/012d6.png`} alt="Garlic butter toast" />
+        <IconButton
+          src="126d9.svg"
+          label="Back to video"
           onClick={onBack}
-          className="overview-back"
-          aria-label="Back to video"
-        >
-          <img src={asset("126d9.svg")} alt="" />
-        </button>
-        <div className="overview-title">
-          <h1>
-            Garlic butter
-            <br />
-            toast
-          </h1>
-          <p>By @ellacooks</p>
-        </div>
+          className="hero-back"
+        />
       </div>
-      <div className="overview-content">
+      <section className="recipe-content">
+        <h1>{recipe.title}</h1>
+        <p className="byline">By {author}</p>
         <PrimaryButton onClick={onStart}>Start cooking</PrimaryButton>
-        <p className="overview-description">
+        <p className="recipe-description">
           Crisp edges, a soft middle, and plenty of garlic.
           <br />A simple snack you can make in 15 minutes.
         </p>
-        <div className="recipe-stats">
-          <div>
-            <span>Total time</span>
+        <div className="recipe-meta">
+          <span>
+            <small>Total time</small>
             <strong>15 min</strong>
-          </div>
-          <div>
-            <span>Servings</span>
-            <strong>
-              {servings} {servings === 1 ? "person" : "people"}
-            </strong>
-          </div>
+          </span>
+          <span>
+            <small>Servings</small>
+            <strong>{servings} people</strong>
+          </span>
         </div>
-        <div className="ingredients-heading">
+        <div className="ingredients-title">
           <h2>Ingredients</h2>
-          <div className="servings-stepper" aria-label="Servings">
-            <button
-              onClick={() => setServings(Math.max(1, servings - 1))}
-              disabled={servings === 1}
-            >
-              −
-            </button>
-            <span>{servings} servings</span>
-            <button
-              onClick={() => setServings(Math.min(4, servings + 1))}
-              disabled={servings === 4}
-            >
-              +
-            </button>
-          </div>
+          <ServingControl servings={servings} onChange={setServings} dark />
         </div>
-        <ul className="overview-ingredients">
-          <li>{amount(servings)} slices sourdough</li>
-          <li>{amount(servings)} tbsp softened butter</li>
-          <li>{amount(servings)} cloves garlic, minced</li>
-          <li>{amount(servings / 2)} tbsp chopped parsley</li>
+        <ul className="recipe-ingredient-list">
+          {recipe.ingredients.map((item) => {
+            const amount = item.amount * servings
+            return (
+              <li key={item.name}>
+                {amount} {pluralize(amount, item.unit)}{" "}
+                {item.name.toLowerCase()}
+              </li>
+            )
+          })}
         </ul>
-      </div>
-      <StepPreview step={0} overview />
+      </section>
     </main>
   )
 }
 
-function TimerCard({
-  remaining,
-  running,
-  touched,
-  onStartPause,
-  onReset,
+function IngredientsScreen({
+  servings,
+  setServings,
+  checked,
+  setChecked,
+  onBack,
+  onStart,
+  recipe,
 }: {
-  remaining: number
-  running: boolean
-  touched: boolean
-  onStartPause: () => void
-  onReset: () => void
+  servings: number
+  setServings: (value: number) => void
+  checked: boolean[]
+  setChecked: React.Dispatch<React.SetStateAction<boolean[]>>
+  onBack: () => void
+  onStart: () => void
+  recipe: CreatorRecipe
 }) {
-  const minutes = Math.floor(remaining / 60)
-  const seconds = remaining % 60
-  const label = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
-  const status =
-    remaining === 0
-      ? "Time’s up"
-      : running
-        ? "Timer running"
-        : touched
-          ? "Paused"
-          : "Ready to start"
-
   return (
-    <section
-      className={`timer-card ${remaining === 0 ? "timer-finished" : ""}`}
-      aria-live="polite"
-    >
-      <strong className="timer-time">{label}</strong>
-      <p>8-minute timer · {status}</p>
-      <div className="timer-controls">
-        <button type="button" onClick={onStartPause}>
-          {remaining === 0
-            ? "Restart timer"
-            : running
-              ? "Pause timer"
-              : touched
-                ? "Resume timer"
-                : "Start timer"}
-        </button>
-        {touched && remaining > 0 && (
-          <button type="button" onClick={onReset}>
-            Reset
-          </button>
-        )}
-      </div>
-    </section>
+    <main className="light-screen">
+      <AppHeader title="Ingredients" onBack={onBack} />
+      <section className="ingredients-page scroll-content">
+        <div className="ingredients-heading">
+          <div>
+            <h2>{recipe.title}</h2>
+            <p>Tap each item as you get it ready.</p>
+          </div>
+          <ServingControl servings={servings} onChange={setServings} />
+        </div>
+        <div className="ingredient-cards">
+          {recipe.ingredients.map((item, index) => {
+            const amount = item.amount * servings
+            return (
+              <button
+                className={checked[index] ? "checked" : ""}
+                key={item.name}
+                onClick={() =>
+                  setChecked((current) =>
+                    current.map((value, itemIndex) =>
+                      itemIndex === index ? !value : value,
+                    ),
+                  )
+                }
+              >
+                <span className="checkmark">
+                  {checked[index] && <img src={`${assets}/7355a.svg`} alt="" />}
+                </span>
+                <span>
+                  <strong>{item.name}</strong>
+                  <small>
+                    {amount} {pluralize(amount, item.unit)}
+                  </small>
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </section>
+      <footer className="sticky-action">
+        <PrimaryButton onClick={onStart}>Start cooking</PrimaryButton>
+      </footer>
+    </main>
   )
 }
 
-function IngredientsSheet({
-  servings,
+function TimerSheet({
+  state,
+  seconds,
+  instruction,
+  onStart,
+  onPause,
+  onResume,
+  onReset,
   onClose,
+  onDone,
+  onRestart,
 }: {
-  servings: number
+  state: TimerState
+  seconds: number
+  instruction: string
+  onStart: () => void
+  onPause: () => void
+  onResume: () => void
+  onReset: () => void
   onClose: () => void
+  onDone: () => void
+  onRestart: () => void
 }) {
-  const items = [
-    ["Sourdough", `${amount(servings)} thick slices`],
-    ["Softened butter", `${amount(servings)} tbsp`],
-    ["Garlic", `${amount(servings)} cloves, minced`],
-    ["Parsley", `${amount(servings / 2)} tbsp, chopped`],
-  ]
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+  const progress = Math.max(0, seconds / 480)
+
   return (
-    <div className="sheet-layer" role="presentation" onClick={onClose}>
-      <section
-        className="ingredients-sheet"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Ingredients"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="sheet-grip" />
-        <div className="sheet-title-row">
-          <h2>Ingredients</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close ingredients"
-          >
-            ×
-          </button>
+    <div className="timer-overlay" role="dialog" aria-modal="true">
+      <button
+        className="overlay-backdrop"
+        onClick={onClose}
+        aria-label="Close timer"
+      />
+      <section className="timer-sheet">
+        <div className="sheet-handle" />
+        <div className="sheet-heading">
+          <div>
+            <small>STEP 4</small>
+            <h2>
+              {state === "finished" ? "Toast is ready" : "Bake until golden"}
+            </h2>
+          </div>
+          <IconButton src="fc709.svg" label="Close timer" onClick={onClose} />
         </div>
-        <p>Garlic butter toast · {servings} servings</p>
-        <div className="sheet-items">
-          {items.map(([name, value]) => (
-            <div key={name}>
-              <strong>{name}</strong>
-              <span>{value}</span>
-            </div>
-          ))}
+        <div
+          className={`timer-ring ${state}`}
+          style={{ "--progress": progress } as React.CSSProperties}
+        >
+          <div>
+            <strong>
+              {String(minutes).padStart(2, "0")}:
+              {String(remainingSeconds).padStart(2, "0")}
+            </strong>
+            <span>
+              {state === "ready"
+                ? "Ready"
+                : state === "paused"
+                  ? "Paused"
+                  : state === "finished"
+                    ? "Done"
+                    : "Remaining"}
+            </span>
+          </div>
         </div>
-        <p>Your current step stays open underneath.</p>
-        <PrimaryButton onClick={onClose} secondary>
-          Back to cooking
-        </PrimaryButton>
+        <p className="timer-note">
+          {instruction}
+        </p>
+        <div className="timer-actions">
+          {state === "ready" && (
+            <PrimaryButton onClick={onStart}>Start timer</PrimaryButton>
+          )}
+          {state === "running" && (
+            <>
+              <PrimaryButton variant="secondary" onClick={onReset}>
+                Reset
+              </PrimaryButton>
+              <PrimaryButton onClick={onPause}>Pause</PrimaryButton>
+            </>
+          )}
+          {state === "paused" && (
+            <>
+              <PrimaryButton variant="secondary" onClick={onReset}>
+                Reset
+              </PrimaryButton>
+              <PrimaryButton onClick={onResume}>Resume</PrimaryButton>
+            </>
+          )}
+          {state === "finished" && (
+            <><PrimaryButton variant="secondary" onClick={onRestart}>Restart timer</PrimaryButton><PrimaryButton onClick={onDone}>Continue cooking</PrimaryButton></>
+          )}
+        </div>
       </section>
     </div>
   )
 }
 
 function CookScreen({
-  step,
-  setStep,
   servings,
-  onBackToOverview,
-  onFinish,
-  remaining,
-  running,
-  timerTouched,
-  onStartPause,
-  onReset,
+  currentStep,
+  setCurrentStep,
+  onBack,
+  onIngredients,
+  onComplete,
+  timerState,
+  setTimerState,
+  timerSeconds,
+  setTimerSeconds,
+  recipe,
 }: {
-  step: number
-  setStep: (step: number) => void
   servings: number
-  onBackToOverview: () => void
-  onFinish: () => void
-  remaining: number
-  running: boolean
-  timerTouched: boolean
-  onStartPause: () => void
-  onReset: () => void
+  currentStep: number
+  setCurrentStep: (value: number) => void
+  onBack: () => void
+  onIngredients: () => void
+  onComplete: () => void
+  timerState: TimerState
+  setTimerState: (state: TimerState) => void
+  timerSeconds: number
+  setTimerSeconds: (seconds: number) => void
+  recipe: CreatorRecipe
 }) {
-  const [sheetOpen, setSheetOpen] = useState(false)
-  const instructions = [
-    `Cut ${amount(servings)} thick ${
-      servings === 1 ? "slice" : "slices"
-    } of sourdough.`,
-    `Mix ${amount(servings)} tbsp softened butter, ${amount(servings)} minced garlic ${
-      servings === 1 ? "clove" : "cloves"
-    } and ${amount(servings / 2)} tbsp chopped parsley until evenly combined.`,
-    "Cover the bread right to the edges with the garlic butter.",
-    "Bake at 200°C until the edges are golden and the top is crisp.",
-    "Let the toast cool slightly, then serve while warm.",
-  ]
-  const goBack = () => (step === 0 ? onBackToOverview() : setStep(step - 1))
+  const [timerOpen, setTimerOpen] = useState(false)
+  const [miniVideoOpen, setMiniVideoOpen] = useState(true)
+  const [expandedVideo, setExpandedVideo] = useState(false)
+  const activeCard = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    activeCard.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+  }, [currentStep])
 
   return (
-    <main className="cook-screen">
-      <Header title="Follow along" onBack={goBack} />
-      <div className={`cook-content ${step === 3 ? "timer-step-content" : ""}`}>
-        {step === 3 ? (
-          <>
-            <h2 className="timer-recipe-title">
-              Garlic butter toast · {servings} servings
-            </h2>
-            <p className="timer-step-label">Step 4 of 5</p>
-            <div className="compact-step complete-step">
-              <strong>✓&nbsp; 3 · Spread generously</strong>
-              <span>Cover the bread right to the edges.</span>
-            </div>
-            <div className="active-step compact-active">
-              <h2>4 · Bake until golden</h2>
-              <p>{instructions[3]}</p>
-            </div>
-            <TimerCard
-              remaining={remaining}
-              running={running}
-              touched={timerTouched}
-              onStartPause={onStartPause}
-              onReset={onReset}
-            />
-            <div className="compact-step">
-              <strong>5 · Serve warm</strong>
-              <span>Let it cool slightly, then enjoy.</span>
-            </div>
-            <p className="timer-hint">
-              Start the timer when your toast goes in the oven.
-            </p>
-          </>
-        ) : (
-          <>
-            <p className="recipe-eyebrow">
-              Garlic butter toast · {servings} servings
-            </p>
-            <p className="step-count">Step {step + 1} of 5</p>
-            <div className="active-step">
-              <h2>
-                {step + 1} · {stepTitles[step]}
-              </h2>
-              <p>{instructions[step]}</p>
-            </div>
-            <h3>Your steps</h3>
-            <ol className="steps-list">
-              {stepTitles.map((title, index) => (
-                <li key={title} className={index === step ? "current" : ""}>
-                  <span>{index < step ? "✓" : index === step ? "→" : ""}</span>
-                  {index + 1} · {title}
-                </li>
-              ))}
-            </ol>
-            {step === 4 && timerTouched && (
+    <main className="light-screen">
+      <AppHeader title="Follow along" onBack={onBack} />
+      <section className="cook-page scroll-content">
+        <p className="recipe-kicker">
+          {recipe.title} · {servings}{" "}
+          {servings === 1 ? "serving" : "servings"}
+        </p>
+        <div className="step-list">
+          {recipe.steps.map((step, index) => (
+            <article
+              className={`step-card ${
+                index === currentStep
+                  ? "current"
+                  : index < currentStep
+                    ? "complete"
+                    : ""
+              }`}
+              key={step.title}
+              ref={index === currentStep ? activeCard : undefined}
+            >
               <button
-                type="button"
-                className="view-timer"
-                onClick={() => setStep(3)}
+                className="step-select"
+                onClick={() => setCurrentStep(index)}
               >
-                View cooking timer
+                <small>
+                  STEP {index + 1}
+                  {index === currentStep
+                    ? " · CURRENT STEP"
+                    : index < currentStep
+                      ? " · COMPLETE"
+                      : ""}
+                </small>
+                <span>{getStepInstruction(index, servings, recipe)}</span>
               </button>
-            )}
-          </>
-        )}
-      </div>
-      <div className="cook-actions">
-        <PrimaryButton onClick={() => setSheetOpen(true)} secondary>
+              {index === 3 && (
+                <button
+                  className={`timer-chip ${timerState}`}
+                  onClick={() => setTimerOpen(true)}
+                >
+                  <img src={`${assets}/55a47.svg`} alt="" />
+                  {timerState === "running"
+                    ? `${Math.floor(timerSeconds / 60)}:${String(timerSeconds % 60).padStart(2, "0")}`
+                    : timerState === "finished"
+                      ? "Done"
+                      : "8 min"}
+                </button>
+              )}
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {miniVideoOpen && (
+        <div className="mini-video">
+          <button
+            className="mini-expand"
+            onClick={() => setExpandedVideo(true)}
+            aria-label={`Expand video for step ${currentStep + 1}`}
+          >
+            <img
+              src={`${assets}/${stepImages[currentStep]}`}
+              alt={`Cooking demonstration for ${recipe.steps[currentStep].title}`}
+            />
+            <span>Step {currentStep + 1}</span>
+          </button>
+          <button
+            className="mini-close"
+            onClick={() => setMiniVideoOpen(false)}
+            aria-label="Close mini video"
+          >
+            <img src={`${assets}/12b4a.svg`} alt="" />
+          </button>
+        </div>
+      )}
+      {!miniVideoOpen && <button type="button" className="mini-video-tab" onClick={() => setMiniVideoOpen(true)} aria-label="Restore step video">‹</button>}
+
+      <footer className="cook-actions">
+        <PrimaryButton variant="secondary" onClick={onIngredients}>
           Ingredients
         </PrimaryButton>
         <PrimaryButton
-          onClick={() => (step === 4 ? onFinish() : setStep(step + 1))}
+          onClick={() => {
+            if (currentStep === recipe.steps.length - 1) onComplete()
+            else setCurrentStep(currentStep + 1)
+          }}
         >
-          {step === 4 ? "Finish cooking" : "Next step"}
+          {currentStep === recipe.steps.length - 1 ? "Finish" : "Next step"}
         </PrimaryButton>
-      </div>
-      <StepPreview step={step} />
-      {sheetOpen && (
-        <IngredientsSheet
-          servings={servings}
-          onClose={() => setSheetOpen(false)}
+      </footer>
+
+      {expandedVideo && (
+        <div className="expanded-video" role="dialog" aria-modal="true">
+          <img
+            src={`${assets}/${stepImages[currentStep]}`}
+            alt={`Cooking demonstration for ${recipe.steps[currentStep].title}`}
+          />
+          <div className="expanded-video-shade" />
+          <IconButton
+            src="fc709.svg"
+            label="Close video"
+            onClick={() => setExpandedVideo(false)}
+          />
+          <div>
+            <small>STEP {currentStep + 1}</small>
+            <h2>{recipe.steps[currentStep].title}</h2>
+            <p>{getStepInstruction(currentStep, servings, recipe)}</p>
+          </div>
+        </div>
+      )}
+
+      {timerOpen && (
+        <TimerSheet
+          state={timerState}
+          seconds={timerSeconds}
+          instruction={getStepInstruction(3, servings, recipe)}
+          onStart={() => setTimerState("running")}
+          onPause={() => setTimerState("paused")}
+          onResume={() => setTimerState("running")}
+          onReset={() => {
+            setTimerSeconds(480)
+            setTimerState("ready")
+          }}
+          onClose={() => setTimerOpen(false)}
+          onDone={() => {
+            setTimerOpen(false)
+            setCurrentStep(4)
+          }}
+          onRestart={() => setTimerState("running")}
         />
       )}
     </main>
   )
 }
 
-function Complete({
-  onHeaderBack,
-  onBackToVideo,
-  onPostResult,
+function CompleteScreen({
+  onBack,
+  onTakePhoto,
+  onUpload,
+  onVideo,
 }: {
-  onHeaderBack: () => void
-  onBackToVideo: () => void
-  onPostResult: () => void
+  onBack: () => void
+  onTakePhoto: () => void
+  onUpload: () => void
+  onVideo: () => void
 }) {
+  const [sourceChooserOpen, setSourceChooserOpen] = useState(false)
+
   return (
-    <main className="cook-screen">
-      <Header title="Follow along" onBack={onHeaderBack} />
-      <section className="complete-content">
+    <main className="light-screen">
+      <AppHeader title="Follow along" onBack={onBack} />
+      <section className="complete-page">
         <h2>You made it!</h2>
         <p>One saved video. One real-life win.</p>
-        <img src={asset("012d6.png")} alt="Finished garlic butter toast" />
+        <img src={`${assets}/012d6.png`} alt="Finished garlic butter toast" />
         <h3>Made it? Make it yours.</h3>
-        <p>
+        <p className="complete-copy">
           Create a new TikTok post with your photo or video. The original recipe
           will be linked.
         </p>
-        <PrimaryButton onClick={onPostResult}>Post your result</PrimaryButton>
-        <PrimaryButton onClick={onBackToVideo} secondary>
+        <PrimaryButton onClick={() => setSourceChooserOpen(true)}>
+          Post your result
+        </PrimaryButton>
+        <PrimaryButton variant="secondary" onClick={onVideo}>
           Back to video
         </PrimaryButton>
       </section>
-    </main>
-  )
-}
-
-function MediaPicker({
-  onBack,
-  onNext,
-  onChooseLocal,
-}: {
-  onBack: () => void
-  onNext: () => void
-  onChooseLocal: (file: File) => void
-}) {
-  return (
-    <main className="media-picker">
-      <StatusBar />
-      <div className="picker-title">
-        <button type="button" onClick={onBack} aria-label="Cancel">
-          ×
-        </button>
-        <span>Recents⌄</span>
-      </div>
-      <div className="picker-tabs">
-        <span>All</span>
-        <span>Videos</span>
-        <span>Photos</span>
-        <span>Live Photos</span>
-      </div>
-      <div className="media-grid">
-        <button type="button" className="selected-media" onClick={onNext}>
-          <img src={asset("012d6.png")} alt="Finished garlic toast" />
-          <span>✓&nbsp; Finished toast</span>
-        </button>
-        <label className="local-media">
-          <input
-            type="file"
-            accept="image/*,video/*"
-            onChange={(event) => {
-              const file = event.target.files?.[0]
-              if (file) onChooseLocal(file)
-            }}
+      {sourceChooserOpen && (
+        <div className="source-overlay" role="dialog" aria-modal="true">
+          <button
+            className="overlay-backdrop"
+            onClick={() => setSourceChooserOpen(false)}
+            aria-label="Dismiss source chooser"
           />
-          <strong>＋ Local</strong>
-          <span>Photo or video</span>
-        </label>
-        {Array.from({ length: 10 }).map((_, index) => (
-          <button type="button" className="placeholder-media" key={index}>
-            <span>
-              Video
-              <br />
-              00:12
-            </span>
-          </button>
-        ))}
-      </div>
-      <div className="picker-footer">
-        <span>✓&nbsp; Select multiple</span>
-        <PrimaryButton onClick={onNext}>Next (1)</PrimaryButton>
-      </div>
-    </main>
-  )
-}
-
-function MediaPreview({
-  mediaUrl,
-  mediaType,
-  onBack,
-  onNext,
-}: {
-  mediaUrl: string
-  mediaType: "image" | "video"
-  onBack: () => void
-  onNext: () => void
-}) {
-  return (
-    <main className="media-preview">
-      <StatusBar light />
-      <button
-        type="button"
-        onClick={onBack}
-        className="preview-back"
-        aria-label="Back"
-      >
-        <img src={asset("6a378.svg")} alt="" />
-      </button>
-      <button type="button" className="add-sound">
-        <img src={asset("cc27b.svg")} alt="" />
-        Add sound
-      </button>
-      <div className="preview-toolbar" aria-label="Editing tools">
-        <button type="button">
-          <img src={asset("3ba7a.svg")} alt="Edit" />
-        </button>
-        <button type="button" className="text-tool">
-          Aa
-        </button>
-        <button type="button">
-          <img src={asset("9065a.svg")} alt="Stickers" />
-        </button>
-        <button type="button">
-          <img src={asset("866a0.svg")} alt="Effects" />
-        </button>
-      </div>
-      <div className="preview-media">
-        {mediaType === "video" ? (
-          <video src={mediaUrl} controls playsInline />
-        ) : (
-          <img src={mediaUrl} alt="Selected post preview" />
-        )}
-      </div>
-      <PrimaryButton onClick={onNext} className="preview-next">
-        Next
-      </PrimaryButton>
-    </main>
-  )
-}
-
-function RecipeDraftPreview({ onClose }: { onClose: () => void }) {
-  return (
-    <div className="recipe-preview-layer" onClick={onClose} role="presentation">
-      <section
-        className="recipe-preview-card"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Original recipe preview"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close recipe preview"
-        >
-          ×
-        </button>
-        <img src={asset("012d6.png")} alt="Garlic butter toast" />
-        <div>
-          <span>Original recipe</span>
-          <h2>Garlic butter toast</h2>
-          <p>By @ellacooks · Attribution confirmed</p>
-          <p>8-minute cook timer · {stepTitles.length} guided steps</p>
+          <section className="source-sheet">
+            <div className="sheet-heading">
+              <h2>Post your result</h2>
+              <IconButton
+                src="fc709.svg"
+                label="Close"
+                onClick={() => setSourceChooserOpen(false)}
+              />
+            </div>
+            <button onClick={onTakePhoto}>
+              <img src={`${assets}/75c80.svg`} alt="" />
+              Take photo
+            </button>
+            <button onClick={onUpload}>
+              <img src={`${assets}/106c3.svg`} alt="" />
+              Upload from album
+            </button>
+          </section>
         </div>
-        <PrimaryButton onClick={onClose} secondary>
-          Back to post
-        </PrimaryButton>
-      </section>
-    </div>
-  )
-}
-
-function CreatorAI({ onBack, onDone }: { onBack: () => void; onDone: () => void }) {
-  useEffect(() => {
-    const timer = window.setTimeout(onDone, 1400)
-    return () => window.clearTimeout(timer)
-  }, [onDone])
-
-  return (
-    <main className="creator-ai-screen">
-      <StatusBar />
-      <button type="button" className="creator-ai-back" onClick={onBack} aria-label="Cancel">
-        ×
-      </button>
-      <div className="creator-ai-copy">
-        <span className="creator-ai-kicker">AI guide draft</span>
-        <h1>Finding the rhythm inside your video.</h1>
-        <p>We will suggest ingredients and steps for you to review before posting.</p>
-      </div>
-      <div className="creator-ai-list" aria-live="polite">
-        {['Identifying ingredients', 'Organizing steps', 'Matching video clips'].map((label, index) => (
-          <div className="creator-ai-row" key={label}>
-            <span className="creator-ai-dot">{index === 0 ? '·' : ''}</span>
-            <span>{label}</span>
-          </div>
-        ))}
-      </div>
-      <p className="creator-ai-note">AI generation is simulated for this prototype.</p>
+      )}
     </main>
   )
 }
 
-function CreatorEditor({
-  onBack,
-  onConfirm,
+function PostPicker({
+  onClose,
+  onNext,
+  initialCamera,
 }: {
-  onBack: () => void
-  onConfirm: (title: string, temperature: string) => void
+  onClose: () => void
+  onNext: () => void
+  initialCamera: boolean
 }) {
-  const [title, setTitle] = useState('Garlic butter toast')
-  const [temperature, setTemperature] = useState('')
-  const [error, setError] = useState(false)
+  const cameraOpen = initialCamera
+  const [captured, setCaptured] = useState(false)
 
-  const confirm = () => {
-    if (!temperature.trim()) {
-      setError(true)
-      return
-    }
-    onConfirm(title, temperature)
+  if (cameraOpen) {
+    return (
+      <main className="camera-screen">
+        <div className="camera-viewfinder">
+          <img src={`${assets}/012d6.png`} alt="Camera preview" />
+        </div>
+        <IconButton
+          src="e60cc.svg"
+          label="Close camera"
+          onClick={onClose}
+          className="camera-close"
+        />
+        <div className="camera-tools">
+          {[
+            "27425.svg",
+            "d5618.svg",
+            "ba962.svg",
+            "dbb0b.svg",
+            "823b8.svg",
+          ].map((icon) => (
+            <img src={`${assets}/${icon}`} alt="" key={icon} />
+          ))}
+        </div>
+        <div className="camera-modes">
+          <span>10m</span>
+          <span>60s</span>
+          <span>15s</span>
+          <strong>PHOTO</strong>
+          <span>TEXT</span>
+        </div>
+        <button
+          className={`camera-shutter ${captured ? "captured" : ""}`}
+          onClick={() => setCaptured(true)}
+          aria-label="Take photo"
+        />
+        {captured && (
+          <div className="camera-confirm">
+            <button onClick={() => setCaptured(false)}>Retake</button>
+            <button onClick={onNext}>Use photo</button>
+          </div>
+        )}
+      </main>
+    )
   }
 
   return (
-    <main className="creator-editor-screen">
-      <header className="creator-editor-header">
-        <button type="button" onClick={onBack} aria-label="Back to post">
-          <img src={asset('b46c4.svg')} alt="" />
+    <main className="light-screen picker-screen">
+      <header className="picker-header">
+        <IconButton src="fc709.svg" label="Close" onClick={onClose} />
+        <button>
+          Recents <img src={`${assets}/3ebc3.svg`} alt="" />
         </button>
-        <div>
-          <span>Review & edit</span>
-          <strong>Step-by-step guide</strong>
-        </div>
-        <em>AI draft</em>
+        <span />
       </header>
-      <section className="creator-editor-body">
-        <h1>Make it yours.</h1>
-        <p>Review what AI found, then fill in anything only you would know.</p>
-        <div className="creator-editor-section">
-          <h2>Guide details</h2>
-          <label htmlFor="creator-title">Recipe name</label>
-          <input id="creator-title" value={title} onChange={(event) => setTitle(event.target.value)} />
-          <div className="creator-editor-fields">
-            <div><label htmlFor="creator-servings">Serves</label><input id="creator-servings" value="2 people" readOnly /></div>
-            <div><label htmlFor="creator-time">Total time</label><input id="creator-time" value="15 min" readOnly /></div>
-          </div>
-        </div>
-        <div className="creator-editor-section">
-          <h2>Ingredients</h2>
-          {['2 thick slices · Sourdough', '2 tbsp · Softened butter', '2 cloves · Garlic, minced', '1 tbsp · Parsley, chopped'].map((item) => (
-            <div className="creator-editor-line" key={item}>{item}</div>
-          ))}
-        </div>
-        <div className="creator-editor-section">
-          <h2>Steps <small>5 clips matched</small></h2>
-          {['Slice the bread', 'Make the garlic butter', 'Spread generously', 'Bake until golden', 'Serve warm'].map((step, index) => (
-            <div className={`creator-editor-step ${index === 3 ? 'creator-editor-missing' : ''}`} key={step}>
-              <b>{index + 1}</b><span>{step}</span>
-              {index === 3 && <div className="creator-editor-input"><strong>Needs your input</strong><p>AI found “bake until golden”, but the temperature is not in the video.</p><label htmlFor="creator-temperature">Oven temperature</label><input id="creator-temperature" placeholder="e.g. 200°C" value={temperature} onChange={(event) => { setTemperature(event.target.value); setError(false) }} />{error && <small>Add the oven temperature to continue.</small>}</div>}
-            </div>
-          ))}
-        </div>
-      </section>
-      <footer className="creator-editor-footer">
-        <button type="button" className="creator-editor-secondary">Preview</button>
-        <button type="button" className="creator-editor-primary" onClick={confirm}>Confirm guide</button>
+      <nav className="media-tabs">
+        <button className="active">All</button>
+        <button>Videos</button>
+        <button>Photos</button>
+        <button>Live Photos</button>
+      </nav>
+      <div className="media-grid">
+        <button className="selected">
+          <img src={`${assets}/012d6.png`} alt="Garlic butter toast" />
+          <b>1</b>
+        </button>
+        {Array.from({ length: 8 }, (_, index) => (
+          <button className="placeholder" key={index}>
+            <span />
+            <small>
+              Video
+              <br />
+              00:12
+            </small>
+          </button>
+        ))}
+      </div>
+      <div className="picker-selection">
+        <span>
+          <img src={`${assets}/012d6.png`} alt="" />
+          <button aria-label="Remove selected media">
+            <img src={`${assets}/12b4a.svg`} alt="" />
+          </button>
+        </span>
+      </div>
+      <footer className="picker-footer">
+        <label>
+          <input type="checkbox" defaultChecked /> Select multiple
+        </label>
+        <PrimaryButton onClick={onNext}>Next (1)</PrimaryButton>
       </footer>
     </main>
   )
 }
 
-function SettingsRow({
-  title,
-  detail,
-  onClick,
-}: {
-  title: string
-  detail?: string
-  onClick?: () => void
-}) {
-  return (
-    <button type="button" className="settings-row" onClick={onClick}>
-      <span>
-        <strong>{title}</strong>
-        {detail && <small>{detail}</small>}
-      </span>
-      <img src={asset("56c67.svg")} alt="" />
-    </button>
-  )
-}
-
-function PostingSettings({
-  kind,
-  mediaUrl,
-  mediaType,
-  caption,
-  setCaption,
-  audience,
-  setAudience,
-  recipeAdded,
-  setRecipeAdded,
-  onAddRecipe,
+function PostPreview({
   onBack,
   onPost,
+  recipeTitle,
+  caption,
+  onCaption,
 }: {
-  kind: "creator" | "result"
-  mediaUrl: string
-  mediaType: "image" | "video"
-  caption: string
-  setCaption: (caption: string) => void
-  audience: string
-  setAudience: (audience: string) => void
-  recipeAdded: boolean
-  setRecipeAdded: (value: boolean) => void
-  onAddRecipe?: () => void
   onBack: () => void
   onPost: () => void
+  recipeTitle: string
+  caption: string
+  onCaption: (value: string) => void
 }) {
-  const [recipePreview, setRecipePreview] = useState(false)
-  const cycleAudience = () => {
-    const options = ["Everyone", "Friends", "Only you"]
-    setAudience(options[(options.indexOf(audience) + 1) % options.length])
-  }
-
   return (
-    <main className="posting-settings">
-      <StatusBar />
-      <button
-        type="button"
-        onClick={onBack}
-        className="settings-back"
-        aria-label="Back"
-      >
-        <img src={asset("cdadb.svg")} alt="" />
-      </button>
-      <textarea
-        value={caption}
-        onChange={(event) => setCaption(event.target.value)}
-        aria-label="Post caption"
-      />
-      <div className="settings-cover">
-        {mediaType === "video" ? (
-          <video src={mediaUrl} muted playsInline />
-        ) : (
-          <img src={mediaUrl} alt="" />
-        )}
-        <span>Edit cover</span>
+    <main className="post-preview">
+      <div className="post-media">
+        <img src={`${assets}/012d6.png`} alt="Selected garlic butter toast" />
+        <IconButton src="126d9.svg" label="Back" onClick={onBack} />
       </div>
-      <p className="caption-tools">
-        # Hashtags&nbsp;&nbsp;&nbsp;&nbsp; @ Mention
-      </p>
-      <div className="settings-list">
-        <SettingsRow title="⌖  Add location" />
-        <SettingsRow title="＋  Add link" />
-        {kind === "creator" ? (
-          <SettingsRow
-            title={recipeAdded ? "Recipe added" : "＋  Add recipe"}
-            detail={
-              recipeAdded
-                ? "Viewers can follow along with this video"
-                : "Let viewers cook along with your video"
-            }
-            onClick={onAddRecipe ?? (() => setRecipeAdded(!recipeAdded))}
-          />
-        ) : (
-          <SettingsRow
-            title="Recipe: Garlic butter toast"
-            detail="From @ellacooks · Linked automatically"
-            onClick={() => setRecipePreview(true)}
-          />
-        )}
-        <SettingsRow
-          title={`${audience} can view this post`}
-          onClick={cycleAudience}
+      <section className="post-form">
+        <textarea
+          value={caption}
+          onChange={(event) => onCaption(event.target.value)}
+          aria-label="Post caption"
         />
-        <SettingsRow
-          title="•••  More options"
-          detail="Privacy and more settings"
-        />
-        <SettingsRow title="Share to" />
-      </div>
-      {kind === "result" && (
-        <p className="posting-note">
-          Your result will publish as a new TikTok post.
-        </p>
-      )}
-      <div className="posting-actions">
-        <button type="button">Drafts</button>
+        <div className="linked-recipe">
+          <img src={`${assets}/012d6.png`} alt="" />
+          <span>
+            <small>Original recipe</small>
+            <strong>{recipeTitle}</strong>
+            <em>@ellacooks</em>
+          </span>
+          <img src={`${assets}/56c67.svg`} alt="" />
+        </div>
+        <button className="post-option">
+          <span>Who can view this post</span>
+          <span>Everyone ›</span>
+        </button>
+        <button className="post-option">
+          <span>More options</span>
+          <span>›</span>
+        </button>
+      </section>
+      <footer className="post-footer">
+        <PrimaryButton variant="secondary" onClick={onBack}>
+          Drafts
+        </PrimaryButton>
         <PrimaryButton onClick={onPost}>Post</PrimaryButton>
-      </div>
-      {recipePreview && (
-        <RecipeDraftPreview onClose={() => setRecipePreview(false)} />
-      )}
+      </footer>
     </main>
   )
 }
 
-export default function App() {
-  const [screen, setScreen] = useState<Screen>("feed")
-  const [feedMode, setFeedMode] = useState<FeedMode>("viewer")
-  const [publishedRecipe, setPublishedRecipe] = useState(true)
-  const [confirmation, setConfirmation] = useState("")
+function PublishedScreen({ onDone, recipeTitle }: { onDone: () => void; recipeTitle: string }) {
+  return (
+    <main className="published-screen">
+      <img src={`${assets}/012d6.png`} alt="Published garlic butter toast" />
+      <div className="published-shade" />
+      <header>
+        <IconButton src="126d9.svg" label="Back to video" onClick={onDone} />
+        <strong>Post published</strong>
+        <span />
+      </header>
+      <section>
+        <div className="success-mark">
+          <img src={`${assets}/7355a.svg`} alt="" />
+        </div>
+        <h1>Your result is live</h1>
+        <p>The original recipe is linked to your post.</p>
+        <div className="original-recipe-card">
+          <img src={`${assets}/012d6.png`} alt="" />
+          <span>
+            <small>ORIGINAL RECIPE</small>
+            <strong>{recipeTitle}</strong>
+            <em>@ellacooks</em>
+          </span>
+        </div>
+        <PrimaryButton onClick={onDone}>Back to video</PrimaryButton>
+      </section>
+    </main>
+  )
+}
+
+type CreatorRecipe = {
+  title: string
+  ingredients: { name: string; amount: number; unit: string }[]
+  steps: { title: string; instruction: string }[]
+  temperature: string
+}
+
+const initialCreatorRecipe = (): CreatorRecipe => ({
+  title: "Garlic butter toast",
+  ingredients: baseIngredients.map((item) => ({ ...item })),
+  steps: steps.map((item) => ({ ...item })),
+  temperature: "",
+})
+
+function CreatorPublish({
+  recipeAdded,
+  recipeTitle,
+  caption,
+  onCaption,
+  onBack,
+  onAddRecipe,
+  onEditRecipe,
+  onRemoveRecipe,
+  onPost,
+}: {
+  recipeAdded: boolean
+  recipeTitle: string
+  caption: string
+  onCaption: (value: string) => void
+  onBack: () => void
+  onAddRecipe: () => void
+  onEditRecipe: () => void
+  onRemoveRecipe: () => void
+  onPost: () => void
+}) {
+  const [audience, setAudience] = useState("Everyone")
+  return (
+    <main className="post-preview creator-publish">
+      <div className="post-media">
+        <img src={`${assets}/012d6.png`} alt="Garlic butter toast video cover" />
+        <IconButton src="126d9.svg" label="Back" onClick={onBack} />
+      </div>
+      <section className="post-form">
+        <textarea value={caption} onChange={(event) => onCaption(event.target.value)} aria-label="Video caption" />
+        {recipeAdded ? (
+          <div className="linked-recipe">
+            <img src={`${assets}/012d6.png`} alt="" />
+            <span><small>Recipe attached</small><strong>{recipeTitle}</strong><em>5 guided steps</em></span>
+            <button type="button" onClick={onRemoveRecipe} aria-label="Remove recipe">×</button>
+          </div>
+        ) : (
+          <button type="button" className="post-option creator-recipe-entry" onClick={onAddRecipe}><span>Add step-by-step guide</span><span>›</span></button>
+        )}
+        {recipeAdded && <button type="button" className="post-option" onClick={onEditRecipe}><span>Edit recipe</span><span>›</span></button>}
+        <button type="button" className="post-option" onClick={() => setAudience(audience === "Everyone" ? "Friends" : audience === "Friends" ? "Only you" : "Everyone")}><span>Who can view this post</span><span>{audience} ›</span></button>
+        <p className="creator-simulation-note">AI generation and publishing are simulated.</p>
+      </section>
+      <footer className="post-footer"><PrimaryButton variant="secondary" onClick={onBack}>Drafts</PrimaryButton><PrimaryButton onClick={onPost}>Post</PrimaryButton></footer>
+    </main>
+  )
+}
+
+function CreatorAI({ onDone, onBack }: { onDone: () => void; onBack: () => void }) {
+  const onDoneRef = useRef(onDone)
+  onDoneRef.current = onDone
+  useEffect(() => {
+    const timeout = window.setTimeout(() => onDoneRef.current(), 1300)
+    return () => window.clearTimeout(timeout)
+  }, [])
+  return (
+    <main className="light-screen creator-ai">
+      <AppHeader title="Add recipe" onBack={onBack} />
+      <section><small>AI GUIDE DRAFT</small><h1>Creating your guide</h1><p>Review the details before attaching it to your post.</p><ol><li>Identifying ingredients</li><li>Organizing steps</li><li>Matching video clips</li></ol><p>AI generation is simulated.</p></section>
+    </main>
+  )
+}
+
+function CreatorEditor({
+  recipe,
+  setRecipe,
+  onBack,
+  onConfirm,
+}: {
+  recipe: CreatorRecipe
+  setRecipe: React.Dispatch<React.SetStateAction<CreatorRecipe>>
+  onBack: () => void
+  onConfirm: () => void
+}) {
+  const [error, setError] = useState(false)
+  const setIngredient = (index: number, key: "name" | "amount" | "unit", value: string) => {
+    setRecipe((current) => ({ ...current, ingredients: current.ingredients.map((item, i) => i === index ? { ...item, [key]: key === "amount" ? Number(value) || 0 : value } : item) }))
+  }
+  const setStep = (index: number, key: "title" | "instruction", value: string) => {
+    setRecipe((current) => ({ ...current, steps: current.steps.map((item, i) => i === index ? { ...item, [key]: value } : item) }))
+  }
+  return (
+    <main className="light-screen creator-editor">
+      <AppHeader title="Review & edit" onBack={onBack} />
+      <div className="creator-editor-scroll scroll-content">
+        <h1>Make it yours.</h1><p>Review what AI found and add anything missing.</p>
+        <section><h2>Guide details</h2><label>Recipe name<input value={recipe.title} onChange={(event) => setRecipe((current) => ({ ...current, title: event.target.value }))} /></label></section>
+        <section><h2>Ingredients</h2>{recipe.ingredients.map((item, index) => <div className="creator-ingredient-fields" key={index}><input aria-label={`Ingredient ${index + 1}`} value={item.name} onChange={(event) => setIngredient(index, "name", event.target.value)} /><input aria-label={`Amount ${index + 1}`} type="number" min="0" step="0.5" value={item.amount} onChange={(event) => setIngredient(index, "amount", event.target.value)} /><input aria-label={`Unit ${index + 1}`} value={item.unit} onChange={(event) => setIngredient(index, "unit", event.target.value)} /></div>)}</section>
+        <section><h2>Steps</h2>{recipe.steps.map((item, index) => <div className="creator-step-fields" key={index}><strong>Step {index + 1}</strong><input aria-label={`Step ${index + 1} title`} value={item.title} onChange={(event) => setStep(index, "title", event.target.value)} /><textarea aria-label={`Step ${index + 1} instructions`} value={item.instruction} onChange={(event) => setStep(index, "instruction", event.target.value)} />{index === 3 && <div className="creator-missing"><strong>Needs your input</strong><p>The video does not state an oven temperature.</p><label>Oven temperature<input value={recipe.temperature} placeholder="e.g. 200°C" onChange={(event) => { setRecipe((current) => ({ ...current, temperature: event.target.value })); setError(false) }} /></label>{error && <small>Add the temperature to continue.</small>}</div>}</div>)}</section>
+      </div>
+      <footer className="creator-editor-footer"><PrimaryButton onClick={() => { if (!recipe.temperature.trim()) { setError(true); return } onConfirm() }}>Attach recipe</PrimaryButton></footer>
+    </main>
+  )
+}
+
+function CreatorPublished({ recipeAdded, onViewPost }: { recipeAdded: boolean; onViewPost: () => void }) {
+  return <main className="published-screen creator-published"><img src={`${assets}/012d6.png`} alt="Garlic butter toast" /><div className="published-shade" /><section><div className="success-mark">✓</div><h1>Post published</h1><p>{recipeAdded ? "Your recipe is attached. Viewers can cook along." : "This video has no recipe attached."}</p><PrimaryButton onClick={onViewPost}>View post</PrimaryButton><small>Publishing is simulated.</small></section></main>
+}
+
+function App() {
+  const [screen, setScreen] = useState<Screen>("home")
+  const [recipeLinked, setRecipeLinked] = useState(true)
+  const [feedKind, setFeedKind] = useState<"original" | "creator">("original")
+  const [creatorRecipe, setCreatorRecipe] = useState<CreatorRecipe>(initialCreatorRecipe)
+  const [creatorRecipeAdded, setCreatorRecipeAdded] = useState(false)
+  const [creatorCaption, setCreatorCaption] = useState("My go-to garlic butter toast 🧄 #easyrecipe #homecooking")
+  const [resultCaption, setResultCaption] = useState("Made @ellacooks’ garlic butter toast 🧄")
   const [servings, setServings] = useState(2)
-  const [step, setStep] = useState(0)
-  const [remaining, setRemaining] = useState(TIMER_SECONDS)
-  const [timerEnd, setTimerEnd] = useState<number | null>(null)
-  const [timerTouched, setTimerTouched] = useState(false)
-  const [creatorMedia, setCreatorMedia] = useState(asset("012d6.png"))
-  const [creatorMediaType, setCreatorMediaType] = useState<"image" | "video">(
-    "image",
+  const [checkedIngredients, setCheckedIngredients] = useState([
+    true,
+    true,
+    true,
+    false,
+  ])
+  const [currentStep, setCurrentStep] = useState(0)
+  const [timerState, setTimerState] = useState<TimerState>("ready")
+  const [timerSeconds, setTimerSeconds] = useState(480)
+  const timerEndAt = useRef<number | null>(null)
+  const [postSource, setPostSource] = useState<"camera" | "album">("album")
+
+  const history = useMemo(
+    () => ({
+      recipe: "home" as Screen,
+      ingredients: currentStep > 0 ? "cook" as Screen : "recipe" as Screen,
+      cook: "ingredients" as Screen,
+      complete: "cook" as Screen,
+      "post-picker": "complete" as Screen,
+      "post-preview": "post-picker" as Screen,
+      published: "post-preview" as Screen,
+      "creator-picker": "home" as Screen,
+      "creator-publish": "creator-picker" as Screen,
+      "creator-ai": "creator-publish" as Screen,
+      "creator-editor": "creator-publish" as Screen,
+      "creator-published": "creator-publish" as Screen,
+      home: "home" as Screen,
+    }),
+    [currentStep],
   )
-  const [creatorCaption, setCreatorCaption] = useState(
-    "My go-to garlic butter toast\n#easyrecipe #homecooking",
-  )
-  const [creatorAudience, setCreatorAudience] = useState("Everyone")
-  const [creatorRecipe, setCreatorRecipe] = useState(false)
-  const [resultMedia, setResultMedia] = useState(asset("012d6.png"))
-  const [resultMediaType, setResultMediaType] = useState<"image" | "video">(
-    "image",
-  )
-  const [resultCaption, setResultCaption] = useState(
-    "Made @ellacooks’ garlic butter toast\n#cookwithme",
-  )
-  const [resultAudience, setResultAudience] = useState("Everyone")
 
   useEffect(() => {
-    if (timerEnd === null) return
+    if (timerState !== "running" || timerEndAt.current === null) return
     const update = () => {
-      const next = Math.max(0, Math.ceil((timerEnd - Date.now()) / 1000))
-      setRemaining(next)
-      if (next === 0) setTimerEnd(null)
+      const next = Math.max(0, Math.ceil(((timerEndAt.current ?? 0) - Date.now()) / 1000))
+      setTimerSeconds(next)
+      if (next === 0) {
+        timerEndAt.current = null
+        setTimerState("finished")
+      }
     }
     update()
     const interval = window.setInterval(update, 250)
     return () => window.clearInterval(interval)
-  }, [timerEnd])
+  }, [timerState])
 
-  const running = timerEnd !== null
-  const timerActions = useMemo(
-    () => ({
-      toggle: () => {
-        setTimerTouched(true)
-        if (timerEnd !== null) {
-          setRemaining(Math.max(0, Math.ceil((timerEnd - Date.now()) / 1000)))
-          setTimerEnd(null)
-        } else {
-          const startAt = remaining === 0 ? TIMER_SECONDS : remaining
-          setRemaining(startAt)
-          setTimerEnd(Date.now() + startAt * 1000)
-        }
-      },
-      reset: () => {
-        setTimerEnd(null)
-        setRemaining(TIMER_SECONDS)
-        setTimerTouched(false)
-      },
-    }),
-    [remaining, timerEnd],
-  )
-
-  const chooseLocal = (kind: "creator" | "result", file: File) => {
-    const url = URL.createObjectURL(file)
-    const type = file.type.startsWith("video/") ? "video" : "image"
-    if (kind === "creator") {
-      setCreatorMedia(url)
-      setCreatorMediaType(type)
-      setScreen("creator-preview")
+  const changeTimerState = (next: TimerState) => {
+    if (next === "running") {
+      const duration = timerSeconds === 0 ? 480 : timerSeconds
+      setTimerSeconds(duration)
+      timerEndAt.current = Date.now() + duration * 1000
     } else {
-      setResultMedia(url)
-      setResultMediaType(type)
-      setScreen("result-preview")
+      if (next === "paused" && timerEndAt.current !== null) {
+        setTimerSeconds(Math.max(0, Math.ceil((timerEndAt.current - Date.now()) / 1000)))
+      }
+      timerEndAt.current = null
     }
+    setTimerState(next)
   }
 
-  if (screen === "feed")
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && screen !== "home") {
+        setScreen(history[screen])
+      }
+      if (screen === "cook" && event.key === "ArrowRight") {
+        setCurrentStep(Math.min(steps.length - 1, currentStep + 1))
+      }
+      if (screen === "cook" && event.key === "ArrowLeft") {
+        setCurrentStep(Math.max(0, currentStep - 1))
+      }
+    }
+    window.addEventListener("keydown", onKeyDown)
+    return () => window.removeEventListener("keydown", onKeyDown)
+  }, [currentStep, history, screen])
+
+  if (screen === "home") {
+    return <HomeScreen onOpenRecipe={() => setScreen("recipe")} onCreate={() => setScreen("creator-picker")} recipeLinked={recipeLinked} creatorPost={feedKind === "creator"} creatorCaption={creatorCaption} />
+  }
+  if (screen === "recipe") {
     return (
-      <Feed
-        onOpenRecipe={() => setScreen("overview")}
-        onCreate={() => {
-          setConfirmation("")
-          setScreen("creator-picker")
-        }}
-        mode={feedMode}
-        recipeLinked={publishedRecipe}
-        confirmation={confirmation}
-        publishedCaption={
-          feedMode === "result" ? resultCaption : creatorCaption
-        }
-      />
-    )
-  if (screen === "overview") {
-    return (
-      <Overview
+      <RecipeScreen
         servings={servings}
         setServings={setServings}
-        onBack={() => setScreen("feed")}
-        onStart={() => setScreen("cook")}
+        onBack={() => setScreen("home")}
+        onStart={() => setScreen("ingredients")}
+        recipe={creatorRecipe}
+        author={feedKind === "creator" ? "@you" : "@ellacooks"}
       />
     )
   }
-  if (screen === "complete")
+  if (screen === "ingredients") {
     return (
-      <Complete
-        onHeaderBack={() => setScreen("cook")}
-        onBackToVideo={() => {
-          setFeedMode("viewer")
-          setConfirmation("")
-          setScreen("feed")
+      <IngredientsScreen
+        servings={servings}
+        setServings={setServings}
+        checked={checkedIngredients}
+        setChecked={setCheckedIngredients}
+        onBack={() => setScreen(currentStep > 0 ? "cook" : "recipe")}
+        onStart={() => setScreen("cook")}
+        recipe={creatorRecipe}
+      />
+    )
+  }
+  if (screen === "cook") {
+    return (
+      <CookScreen
+        servings={servings}
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        onBack={() => setScreen("ingredients")}
+        onIngredients={() => setScreen("ingredients")}
+        onComplete={() => setScreen("complete")}
+        timerState={timerState}
+        setTimerState={changeTimerState}
+        timerSeconds={timerSeconds}
+        setTimerSeconds={setTimerSeconds}
+        recipe={creatorRecipe}
+      />
+    )
+  }
+  if (screen === "complete") {
+    return (
+      <CompleteScreen
+        onBack={() => setScreen("cook")}
+        onTakePhoto={() => {
+          setPostSource("camera")
+          setScreen("post-picker")
         }}
-        onPostResult={() => setScreen("result-picker")}
-      />
-    )
-  if (screen === "result-picker")
-    return (
-      <MediaPicker
-        onBack={() => setScreen("complete")}
-        onNext={() => setScreen("result-preview")}
-        onChooseLocal={(file) => chooseLocal("result", file)}
-      />
-    )
-  if (screen === "creator-picker")
-    return (
-      <MediaPicker
-        onBack={() => setScreen("feed")}
-        onNext={() => setScreen("creator-preview")}
-        onChooseLocal={(file) => chooseLocal("creator", file)}
-      />
-    )
-  if (screen === "result-preview")
-    return (
-      <MediaPreview
-        mediaUrl={resultMedia}
-        mediaType={resultMediaType}
-        onBack={() => setScreen("result-picker")}
-        onNext={() => setScreen("result-settings")}
-      />
-    )
-  if (screen === "creator-preview")
-    return (
-      <MediaPreview
-        mediaUrl={creatorMedia}
-        mediaType={creatorMediaType}
-        onBack={() => setScreen("creator-picker")}
-        onNext={() => setScreen("creator-settings")}
-      />
-    )
-  if (screen === "creator-ai")
-    return (
-      <CreatorAI
-        onBack={() => setScreen("creator-settings")}
-        onDone={() => setScreen("creator-editor")}
-      />
-    )
-  if (screen === "creator-editor")
-    return (
-      <CreatorEditor
-        onBack={() => setScreen("creator-settings")}
-        onConfirm={() => {
-          setCreatorRecipe(true)
-          setScreen("creator-settings")
+        onUpload={() => {
+          setPostSource("album")
+          setScreen("post-picker")
         }}
+        onVideo={() => setScreen("home")}
       />
     )
-  if (screen === "result-settings")
+  }
+  if (screen === "post-picker") {
     return (
-      <PostingSettings
-        kind="result"
-        mediaUrl={resultMedia}
-        mediaType={resultMediaType}
+      <PostPicker
+        onClose={() => setScreen("complete")}
+        onNext={() => setScreen("post-preview")}
+        initialCamera={postSource === "camera"}
+      />
+    )
+  }
+  if (screen === "post-preview") {
+    return (
+      <PostPreview
+        onBack={() => setScreen("post-picker")}
+        onPost={() => setScreen("published")}
+        recipeTitle={creatorRecipe.title}
         caption={resultCaption}
-        setCaption={setResultCaption}
-        audience={resultAudience}
-        setAudience={setResultAudience}
-        recipeAdded
-        setRecipeAdded={() => {}}
-        onBack={() => setScreen("result-preview")}
-        onPost={() => {
-          setFeedMode("result")
-          setPublishedRecipe(true)
-          setConfirmation("Posted · Your recipe is linked")
-          setScreen("feed")
-        }}
+        onCaption={setResultCaption}
       />
     )
-  if (screen === "creator-settings")
-    return (
-      <PostingSettings
-        kind="creator"
-        mediaUrl={creatorMedia}
-        mediaType={creatorMediaType}
-        caption={creatorCaption}
-        setCaption={setCreatorCaption}
-        audience={creatorAudience}
-        setAudience={setCreatorAudience}
-        recipeAdded={creatorRecipe}
-        setRecipeAdded={setCreatorRecipe}
-        onAddRecipe={() => setScreen("creator-ai")}
-        onBack={() => setScreen("creator-preview")}
-        onPost={() => {
-          setFeedMode("creator")
-          setPublishedRecipe(creatorRecipe)
-          setConfirmation(
-            creatorRecipe ? "Posted · Your recipe is linked" : "Posted",
-          )
-          setScreen("feed")
-        }}
-      />
-    )
-  return (
-    <CookScreen
-      step={step}
-      setStep={setStep}
-      servings={servings}
-      onBackToOverview={() => setScreen("overview")}
-      onFinish={() => setScreen("complete")}
-      remaining={remaining}
-      running={running}
-      timerTouched={timerTouched}
-      onStartPause={timerActions.toggle}
-      onReset={timerActions.reset}
-    />
-  )
+  }
+  if (screen === "creator-picker") {
+    return <PostPicker onClose={() => setScreen("home")} onNext={() => setScreen("creator-publish")} initialCamera={false} />
+  }
+  if (screen === "creator-publish") {
+    return <CreatorPublish recipeAdded={creatorRecipeAdded} recipeTitle={creatorRecipe.title} caption={creatorCaption} onCaption={setCreatorCaption} onBack={() => setScreen("creator-picker")} onAddRecipe={() => setScreen("creator-ai")} onEditRecipe={() => setScreen("creator-editor")} onRemoveRecipe={() => setCreatorRecipeAdded(false)} onPost={() => { setRecipeLinked(creatorRecipeAdded); setFeedKind("creator"); setScreen("creator-published") }} />
+  }
+  if (screen === "creator-ai") {
+    return <CreatorAI onBack={() => setScreen("creator-publish")} onDone={() => setScreen("creator-editor")} />
+  }
+  if (screen === "creator-editor") {
+    return <CreatorEditor recipe={creatorRecipe} setRecipe={setCreatorRecipe} onBack={() => setScreen("creator-publish")} onConfirm={() => { setCreatorRecipeAdded(true); setScreen("creator-publish") }} />
+  }
+  if (screen === "creator-published") {
+    return <CreatorPublished recipeAdded={creatorRecipeAdded} onViewPost={() => setScreen("home")} />
+  }
+  return <PublishedScreen onDone={() => setScreen("home")} recipeTitle={creatorRecipe.title} />
 }
+
+export default App

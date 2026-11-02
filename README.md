@@ -1,16 +1,16 @@
-# tt_oa_option1
-This is the online assessment for TikTok AI Product Designer NG
-
-## Follow Along prototype
+# TikTok Cook with me prototype
 
 Live demo: https://tiktok-follow-along-cooking.acceber02.chatgpt.site
 
-The current implementation uses the supplied `TikTok Follow Along 2` Figma Make reference as its visual baseline. The review surface is a fixed 414 × 896 iPhone frame on desktop and fills the viewport on mobile:
+The active React UI is in `src/App.tsx` and `src/index.css`. It uses the pages and assets from the supplied `Desktop/tt folow` folder. `index.html` is the Vite entrypoint; the older root-level `app.js` and `styles.css` are not loaded.
 
-- Viewer flow: video → Cook with me → recipe overview → servings adjustment → steps 1–5 → completion.
-- Cooking flow: Ingredients is a dismissible bottom sheet; step 4 includes a real 8-minute countdown with start, pause, resume, reset and restart.
-- Result flow: choose a sample photo/video → preview → caption and settings → simulated linked post.
-- Creator flow: optional Add recipe → simulated AI generation → review/edit → missing-temperature input → attach recipe → publish. Posts without a recipe show the regular video without Cook with me.
-- The floating step window uses looping, step-matched still images with pause and replay controls; actual video footage is not included in this prototype.
-- TikTok assets, typography, status bar, navigation, sheet surfaces, and posting settings are reused from the supplied reference folder.
-- AI generation and publishing remain simulated; the creator editor still requires the missing oven temperature before attaching the guide.
+Run `pnpm build` to verify the project. The prototype is sized to 414 × 896 on desktop and fills a phone viewport. Scrollbars are hidden while touch scrolling remains available.
+
+## Prototype flows
+
+- Viewer: video → recipe → ingredients → five cooking steps → completion.
+- Cooking: adjustable servings, step-matched visual previews, ingredient checks, step navigation, and a real eight-minute timer with pause, resume, reset, and restart.
+- Result: choose the example camera or album path → caption/settings → simulated linked post.
+- Creator: tap Create → select the example clip → optionally add an AI-drafted recipe → review/edit ingredients and steps, supply the missing oven temperature → attach or omit the recipe → simulate publishing. Only posts with a recipe show Cook with me.
+
+AI analysis, camera capture, video playback, and publishing are simulated. The supplied folder contains still images for the five cooking steps rather than playable clip files. The creator flow is retained in the same TikTok-style component language because the supplied folder did not include creator screens.

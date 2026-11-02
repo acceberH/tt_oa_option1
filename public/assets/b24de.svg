@@ -1,21 +1,21 @@
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Comment icon" clip-path="url(#clip0_0_177)">
-<g id="Group" filter="url(#filter0_d_0_177)">
+<g id="Comment icon" clip-path="url(#clip0_0_1721)">
+<g id="Group" filter="url(#filter0_d_0_1721)">
 <path id="Vector" d="M27.2708 25.0113C30.175 22.1 31.875 19.0612 31.875 15.5337C31.875 8.35833 25.3087 2.55 17.2125 2.55C9.11625 2.55 2.55 8.35833 2.55 15.5337C2.55 22.7021 9.32875 27.625 17.425 27.625V30.005C17.425 30.7558 18.2042 31.2375 18.87 30.8833C20.9383 29.7571 24.7704 27.5117 27.2638 25.0113H27.2708ZM10.0796 13.7842C10.6326 13.7823 11.1637 13.9997 11.5567 14.3887C11.9497 14.7777 12.1725 15.3066 12.1763 15.8596C12.1753 16.134 12.1204 16.4055 12.0145 16.6587C11.9086 16.9119 11.7539 17.1417 11.5592 17.3351C11.3645 17.5284 11.1336 17.6816 10.8798 17.7857C10.6259 17.8899 10.354 17.943 10.0796 17.9421C9.52662 17.9421 8.99619 17.7229 8.60452 17.3326C8.21285 16.9422 7.99187 16.4125 7.99 15.8596C7.99374 15.3078 8.21554 14.78 8.60701 14.3912C8.99848 14.0024 9.52784 13.7842 10.0796 13.7842ZM19.3021 15.8596C19.2983 15.3066 19.0756 14.7777 18.6826 14.3887C18.2896 13.9997 17.7584 13.7823 17.2054 13.7842C16.6524 13.7823 16.1213 13.9997 15.7283 14.3887C15.3353 14.7777 15.1125 15.3066 15.1087 15.8596C15.1097 16.134 15.1646 16.4055 15.2705 16.6587C15.3764 16.9119 15.5311 17.1417 15.7258 17.3351C15.9205 17.5284 16.1513 17.6816 16.4052 17.7857C16.6591 17.8899 16.931 17.943 17.2054 17.9421C17.4798 17.943 17.7517 17.8899 18.0056 17.7857C18.2595 17.6816 18.4904 17.5284 18.6851 17.3351C18.8797 17.1417 19.0344 16.9119 19.1403 16.6587C19.2462 16.4055 19.3012 16.134 19.3021 15.8596ZM24.3312 13.7842C24.883 13.7842 25.4124 14.0024 25.8038 14.3912C26.1953 14.78 26.4171 15.3078 26.4208 15.8596C26.4199 16.134 26.3649 16.4055 26.2591 16.6587C26.1532 16.9119 25.9985 17.1417 25.8038 17.3351C25.6091 17.5284 25.3782 17.6816 25.1244 17.7857C24.8705 17.8899 24.5986 17.943 24.3242 17.9421C23.7712 17.9421 23.2408 17.7229 22.8491 17.3326C22.4574 16.9422 22.2365 16.4125 22.2346 15.8596C22.2383 15.3078 22.4601 14.78 22.8516 14.3912C23.2431 14.0024 23.7724 13.7842 24.3242 13.7842H24.3312Z" fill-rule="evenodd" clip-rule="evenodd" fill="white" fill-opacity="0.9"/>
 </g>
 <path id="Vector_2" d="M17.425 27.625C17.425 27.625 25.5496 26.9946 28.9425 22.6525C25.5425 27.4338 22.1496 30.0404 19.1817 30.9117C16.2067 31.7758 17.425 27.625 17.425 27.625Z" fill-rule="evenodd" clip-rule="evenodd" fill="black" fill-opacity="0.03"/>
 </g>
 <defs>
-<filter id="filter0_d_0_177" x="0.15" y="1.35" width="34.125" height="33.252" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<filter id="filter0_d_0_1721" x="0.15" y="1.35" width="34.125" height="33.252" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
 <feFlood flood-opacity="0" result="BackgroundImageFix"/>
 <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 <feOffset dy="1.2"/>
 <feGaussianBlur stdDeviation="1.2"/>
 <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.15 0"/>
-<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_177"/>
-<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_177" result="shape"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_1721"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_1721" result="shape"/>
 </filter>
-<clipPath id="clip0_0_177">
+<clipPath id="clip0_0_1721">
 <rect width="34" height="34" fill="white"/>
 </clipPath>
 </defs>
