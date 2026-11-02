@@ -197,7 +197,9 @@ function HomeScreen({ onOpenRecipe, onCreate, recipeLinked, creatorPost, creator
       <div className="home-scrim" />
 
       <header className="feed-header">
-        <img className="feed-live" src={`${assets}/72fa4.svg`} alt="" />
+        <div className="feed-live" aria-hidden="true">
+          <img src={`${assets}/72fa4.svg`} alt="" />
+        </div>
         <nav aria-label="Feed">
           <button>
             Following <span className="notification-dot" />

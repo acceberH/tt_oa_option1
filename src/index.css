@@ -205,12 +205,25 @@
   height: 25px;
 }
 
-.feed-header > img.feed-live {
+.feed-header > .feed-live {
+  position: relative;
   width: 23px;
   height: 24px;
 }
 
+.feed-live img {
+  position: absolute;
+  top: -3.3px;
+  left: -4.3px;
+  display: block;
+  width: 31.6px;
+  height: 32.6px;
+  max-width: none;
+}
+
 .feed-header > img:last-child {
+  width: 23px;
+  height: 23.748px;
   justify-self: end;
 }
 
