@@ -4,8 +4,6 @@ A mobile-first TikTok concept that turns a cooking video into a recipe you can a
 
 **[Open the prototype on Vercel →](https://brisk-banyan-bga0ame-qrhuang.vercel.app/)**
 
-> **Access:** Vercel currently asks visitors to sign in. Public access has not yet been enabled.
-
 ## The experience
 
 | Viewer | Creator |
