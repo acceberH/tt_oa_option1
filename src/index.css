@@ -483,6 +483,7 @@
 }
 
 .recipe-screen {
+  height: 100dvh;
   overflow-y: auto;
   color: #fff;
   background: #000;
@@ -1903,6 +1904,7 @@
 html,
 body,
 #root,
+.recipe-screen,
 .scroll-content,
 .post-preview,
 .picker-screen {
@@ -1913,6 +1915,7 @@ body,
 html::-webkit-scrollbar,
 body::-webkit-scrollbar,
 #root::-webkit-scrollbar,
+.recipe-screen::-webkit-scrollbar,
 .scroll-content::-webkit-scrollbar,
 .post-preview::-webkit-scrollbar,
 .picker-screen::-webkit-scrollbar {
@@ -1921,6 +1924,7 @@ body::-webkit-scrollbar,
   height: 0;
 }
 
+.recipe-screen,
 .scroll-content,
 .post-preview,
 .picker-screen {
