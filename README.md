@@ -1,16 +1,30 @@
-# TikTok Cook with me prototype
+# Cook with me
 
-Current local preview: http://127.0.0.1:8443/
+A mobile-first TikTok concept that turns a cooking video into a recipe you can actually follow at your own pace.
 
-The active React UI is in `src/App.tsx` and `src/index.css`. It uses the pages and assets from the supplied `Desktop/tt folow` folder. `index.html` is the Vite entrypoint; the older root-level `app.js` and `styles.css` are not loaded.
+**[Open the prototype on Vercel →](https://brisk-banyan-bga0ame-qrhuang.vercel.app/)**
 
-Run `pnpm build` to verify the project. The prototype is sized to 414 × 896 on desktop and fills a phone viewport. Scrollbars are hidden while touch scrolling remains available.
+> **Access:** Vercel currently asks visitors to sign in. Public access has not yet been enabled.
 
-## Prototype flows
+## The experience
 
-- Viewer: video → recipe → ingredients → five cooking steps → completion.
-- Cooking: adjustable servings, step-matched visual previews with synchronized progress, pause, replay and scrubbing, ingredient checks, step navigation, and a real eight-minute timer with pause, resume, reset, and restart.
-- Result: choose the example camera or album path → caption/settings → simulated linked post.
-- Creator: tap Create → select the example clip → optionally add an AI-drafted recipe → review/edit ingredients and steps, supply the missing oven temperature → attach or omit the recipe → simulate publishing into the video feed. Only posts with a recipe show Cook with me.
+| Viewer | Creator |
+| --- | --- |
+| Open **Cook with me** from a video | Select the cooking clip before posting |
+| Review ingredients and adjust servings | Optionally generate a recipe draft |
+| Follow five steps with a visual reference, replay controls, and a real timer | Edit ingredients and steps; supply the oven temperature the video leaves out |
+| Finish cooking and optionally share a result linked to the original recipe | Publish with or without the recipe attached |
 
-AI analysis, camera capture, video footage, and publishing are simulated. The supplied folder contains still images for the five cooking steps rather than playable clip files. The progress bar and controls behave like a looping eight-second clip; replacing the stills with real footage requires step-matched video files. The creator flow follows the Figma workflow screens.
+The same recipe data carries from the creator flow into the viewer flow. A post only shows **Cook with me** when its creator attaches a recipe.
+
+## Prototype scope
+
+- AI analysis, camera capture, and publishing are simulated.
+- The supplied cooking assets are still images. Each step uses a matched image with interactive clip controls and an eight-second progress loop; the cooking countdown itself runs in real time.
+- Designed for a phone viewport and presented in a 414 × 896 iPhone-sized frame on desktop.
+
+## Built with
+
+React 19 · TypeScript · Vite · Tailwind CSS 4
+
+Run `pnpm build` to verify the production build.
