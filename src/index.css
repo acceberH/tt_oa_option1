@@ -695,6 +695,15 @@
   font-variation-settings: 'wdth' 100;
 }
 
+.app-header > .icon-button {
+  width: 48px;
+  height: 44px;
+}
+
+.app-header > .icon-button img {
+  filter: invert(1);
+}
+
 .header-trailing {
   width: 48px;
 }
