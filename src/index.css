@@ -1996,7 +1996,7 @@ body::-webkit-scrollbar,
   letter-spacing: .08em;
 }
 
-.creator-ai h1,
+.creator-ai-content h1,
 .creator-editor-scroll h1 {
   margin: 12px 0;
   font-family: 'TikTok Sans:Bold', sans-serif;
@@ -2190,3 +2190,394 @@ body::-webkit-scrollbar,
 .camera-tools { top: 84px; }
 .post-media .icon-button { top: 62px; }
 .published-screen > header { height: 109px; }
+
+/* Creator workflow: 414 × 896 Figma frames, with flexible content height. */
+.creator-picker-screen,
+.creator-post-screen,
+.creator-ai,
+.creator-editor {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #fff;
+}
+
+@media (min-width: 601px) {
+  .creator-picker-screen,
+  .creator-post-screen,
+  .creator-ai,
+  .creator-editor { height: 100%; min-height: 100%; }
+}
+
+.creator-home-indicator {
+  position: absolute;
+  z-index: 35;
+  bottom: 8px;
+  left: 50%;
+  width: 139px;
+  height: 5px;
+  transform: translateX(-50%);
+  border-radius: 100px;
+  background: #161823;
+  pointer-events: none;
+}
+
+.creator-picker-header {
+  position: absolute;
+  top: 54px;
+  left: 0;
+  right: 0;
+  display: flex;
+  height: 55px;
+  align-items: center;
+  justify-content: center;
+  color: #161823;
+  font-size: 18px;
+}
+
+.creator-picker-header > button {
+  position: absolute;
+  left: 20px;
+  width: 32px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.creator-picker-header small { font-size: 15px; }
+
+.creator-picker-tabs {
+  position: absolute;
+  top: 109px;
+  right: 0;
+  left: 0;
+  display: flex;
+  height: 51px;
+  align-items: center;
+  gap: 30px;
+  padding: 0 24px;
+  color: #161823;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.creator-media-grid {
+  position: absolute;
+  top: 160px;
+  right: 0;
+  bottom: 168px;
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  gap: 2px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.creator-media-grid > button {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: #161823;
+}
+
+.creator-media-grid > button img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.creator-media-check {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 1px 4px #0005;
+}
+
+.creator-media-check.selected { background: #fe2c55; }
+
+.creator-media-grid small {
+  position: absolute;
+  bottom: 10px;
+  left: 8px;
+  color: #fff;
+  font-size: 11px;
+  text-align: left;
+  text-shadow: 0 1px 3px #000;
+}
+
+.creator-picker-footer {
+  position: absolute;
+  right: 24px;
+  bottom: 46px;
+  left: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+.creator-picker-footer > button:first-child {
+  height: 48px;
+  border: 1px solid #d4d4d6;
+  border-radius: 9px;
+  background: #fff;
+  color: #161823;
+  font-size: 15px;
+}
+
+.creator-picker-footer > button.multiple-active { border-color: #fe2c55; }
+.creator-picker-footer .primary-button { min-width: 0; width: 100%; }
+
+.creator-post-back {
+  position: absolute;
+  z-index: 22;
+  top: 58px;
+  left: 14px;
+  width: 44px;
+  height: 44px;
+}
+
+.creator-post-back img { filter: invert(1); }
+
+.creator-post-scroll {
+  position: absolute;
+  top: 109px;
+  right: 0;
+  bottom: 106px;
+  left: 0;
+  padding: 6px 20px 30px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.creator-post-scroll::-webkit-scrollbar,
+.creator-editor-scroll::-webkit-scrollbar,
+.creator-ai-content::-webkit-scrollbar { display: none; }
+
+.creator-post-compose { position: relative; height: 150px; }
+
+.creator-post-compose textarea {
+  width: calc(100% - 124px);
+  height: 150px;
+  padding: 4px 0;
+  resize: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #161823;
+  font-size: 16px;
+  line-height: 21px;
+}
+
+.creator-post-cover {
+  position: absolute;
+  top: 0;
+  right: 2px;
+  width: 98px;
+  height: 150px;
+  overflow: hidden;
+  background: #161823;
+}
+
+.creator-post-cover img { width: 100%; height: 100%; object-fit: cover; }
+
+.creator-post-cover span {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 9px 5px;
+  color: #fff;
+  background: linear-gradient(transparent, #0009);
+  font-size: 12px;
+}
+
+.creator-post-tags {
+  margin-top: 20px;
+  color: #161823;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.creator-post-settings { margin-top: 35px; }
+
+.creator-post-row,
+.creator-post-row > button {
+  display: flex;
+  width: 100%;
+  min-height: 55px;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 12px 6px 8px 0;
+  border: 0;
+  background: #fff;
+  color: #161823;
+  font-size: 16px;
+  text-align: left;
+}
+
+.creator-post-row > button { min-height: 0; padding: 0; }
+.creator-post-row > span:last-child,
+.creator-post-row > button > span:last-child { font-size: 27px; line-height: 20px; }
+.creator-post-row small { display: block; margin-top: 5px; color: #73747b; font-size: 13px; }
+.creator-recipe-row { min-height: 72px; }
+.creator-recipe-row.attached { font-size: 14px; }
+.creator-recipe-row.attached button { font-size: 14px; }
+.creator-post-row.more { min-height: 88px; }
+.creator-post-row.share { min-height: 55px; }
+
+.creator-more-overlay {
+  position: absolute;
+  z-index: 50;
+  inset: 0;
+  background: #0007;
+}
+
+.creator-more-sheet {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 24px 20px 42px;
+  border-radius: 16px 16px 0 0;
+  background: #fff;
+}
+
+.creator-more-sheet h2 { margin: 0 0 12px; font-family: 'TikTok Sans:Bold', sans-serif; font-size: 18px; }
+.creator-more-sheet button { display: block; width: 100%; min-height: 50px; padding: 0; border: 0; border-top: 1px solid #eee; background: #fff; color: #161823; text-align: left; }
+.creator-more-sheet button:last-child { color: #73747b; }
+
+.creator-remove-recipe {
+  display: block;
+  min-height: 44px;
+  padding: 6px 0;
+  border: 0;
+  background: transparent;
+  color: #73747b;
+  font-size: 13px;
+  text-align: left;
+}
+
+.creator-post-footer {
+  position: absolute;
+  z-index: 30;
+  right: 20px;
+  bottom: 46px;
+  left: 20px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  background: #fff;
+}
+
+.creator-post-footer .primary-button { width: 100%; min-width: 0; }
+.creator-post-footer .primary-button.secondary { border: 1px solid #d4d4d6; background: #fff; }
+
+.creator-ai-content {
+  bottom: 106px;
+  padding: 28px 24px 30px;
+  scrollbar-width: none;
+}
+
+.creator-ai > .creator-ai-content { padding: 28px 24px 30px; }
+.creator-ai .app-header h1 { margin: 0; font-size: 18px; line-height: 26px; }
+
+.creator-ai-image {
+  display: block;
+  width: 100%;
+  height: 180px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.creator-ai-content > small { color: #171721; font-family: 'TikTok Sans:Regular', sans-serif; font-size: 12px; font-weight: 400; letter-spacing: 0; }
+.creator-ai-content h1 { margin: 22px 0 14px; color: #171721; font-size: 26px; line-height: 39px; }
+.creator-ai-content > p { margin: 0 0 20px; color: #171721; font-size: 14px; line-height: 20px; }
+.creator-ai-tasks { display: flex; flex-direction: column; gap: 20px; }
+.creator-ai-tasks span { display: block; min-height: 40px; padding: 10px 12px; border-radius: 8px; background: #f7f7fa; font-size: 14px; line-height: 20px; }
+.creator-ai-progress { height: 4px; margin-top: 20px; overflow: hidden; border-radius: 2px; background: #ededf0; }
+.creator-ai-progress span { display: block; width: 66.7%; height: 100%; border-radius: inherit; background: #ff2b54; }
+
+.creator-ai-footer {
+  position: absolute;
+  right: 24px;
+  bottom: 46px;
+  left: 24px;
+}
+
+.creator-ai-footer .primary-button { width: 100%; }
+
+.creator-editor-scroll {
+  bottom: 106px;
+  padding: 12px 24px 28px;
+  scrollbar-width: none;
+}
+
+.creator-editor-scroll h1 { margin: 0 0 16px; font-size: 26px; line-height: 35px; }
+.creator-editor-scroll > p { margin: 0 0 20px; color: #666; font-size: 14px; line-height: 20px; }
+.creator-editor-scroll section { margin: 0 0 18px; padding: 0; border: 0; }
+.creator-editor-scroll h2 { margin: 0 0 18px; font-size: 18px; line-height: 25px; }
+.creator-editor-scroll label { font-size: 12px; line-height: 17px; }
+.creator-editor-scroll label > input { margin-top: 16px; }
+
+.creator-editor-scroll input,
+.creator-editor-scroll textarea {
+  min-height: 40px;
+  border: 0;
+  border-radius: 8px;
+  background: #f8f8f8;
+  color: #161823;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.creator-editor-scroll textarea { min-height: 40px; resize: none; field-sizing: content; }
+.creator-ingredient-fields { grid-template-columns: minmax(0, 1.5fr) 60px minmax(0, 1fr); gap: 8px; margin-bottom: 8px; }
+.creator-ingredient-fields input { min-height: 40px; }
+.creator-step-fields { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; padding: 12px; border: 1px solid #dddddf; border-radius: 12px; background: #fff; }
+.creator-step-needs-input { scroll-margin-top: 18px; }
+.creator-step-fields > strong { color: #666; font-family: 'TikTok Sans:Regular', sans-serif; font-size: 12px; font-weight: 400; }
+.creator-step-fields input,
+.creator-step-fields textarea { margin: 0; }
+.creator-step-fields textarea { min-height: 40px; }
+.creator-missing { margin-top: 0; padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: #f8f8f8; }
+.creator-missing strong { color: #555; font-family: 'TikTok Sans:Bold', sans-serif; font-size: 14px; }
+.creator-missing p { margin: 10px 0 12px; color: #73747b; }
+.creator-missing label > input { margin-top: 8px; border: 1px solid #ddd; background: #fff; }
+.creator-missing.has-error label > input { border-color: #fe2c55; }
+.creator-missing small { color: #fe2c55; }
+.creator-editor-footer { position: absolute; z-index: 30; right: 24px; bottom: 46px; left: 24px; padding: 0; }
+.creator-editor-footer .primary-button { width: 100%; }
+.creator-editor-scroll > .creator-remove-recipe { margin-top: 120px; }
+
+.bottom-nav::after {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  width: 139px;
+  height: 5px;
+  transform: translateX(-50%);
+  border-radius: 100px;
+  background: #fff;
+  content: '';
+  pointer-events: none;
+}

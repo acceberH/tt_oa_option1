@@ -16,7 +16,7 @@ function StatusBar({ light = false }: { light?: boolean }) {
   )
 }
 
-type Screen = "home" | "recipe" | "ingredients" | "cook" | "complete" | "post-picker" | "post-preview" | "published" | "creator-picker" | "creator-publish" | "creator-ai" | "creator-editor" | "creator-published"
+type Screen = "home" | "recipe" | "ingredients" | "cook" | "complete" | "post-picker" | "post-preview" | "published" | "creator-picker" | "creator-publish" | "creator-ai" | "creator-editor"
 
 type TimerState = "ready" | "running" | "paused" | "finished"
 
@@ -983,12 +983,68 @@ type CreatorRecipe = {
   temperature: string
 }
 
-const initialCreatorRecipe = (): CreatorRecipe => ({
+const originalRecipe: CreatorRecipe = {
   title: "Garlic butter toast",
   ingredients: baseIngredients.map((item) => ({ ...item })),
   steps: steps.map((item) => ({ ...item })),
+  temperature: "200°C",
+}
+
+const initialCreatorRecipe = (): CreatorRecipe => ({
+  title: "Garlic butter toast",
+  ingredients: baseIngredients.map((item) => ({ ...item })),
+  steps: steps.map((item, index) => ({
+    ...item,
+    instruction: index === 3
+      ? "Bake until the edges are golden and the top is crisp."
+      : item.instruction,
+  })),
   temperature: "",
 })
+
+const creatorLibrary = [
+  "012d6.png", "77b18.png", "3f37f.png",
+  "5689b.png", "012d6.png", "3075b.png",
+  "77b18.png", "3f37f.png", "5689b.png",
+  "012d6.png", "3075b.png", "77b18.png",
+]
+
+function CreatorPicker({ onClose, onNext }: { onClose: () => void; onNext: () => void }) {
+  const [selected, setSelected] = useState<number[]>([0])
+  const [multiple, setMultiple] = useState(false)
+  const choose = (index: number) => {
+    setSelected((current) => multiple
+      ? current.includes(index) ? current.filter((value) => value !== index) : [...current, index]
+      : [index])
+  }
+  return (
+    <main className="light-screen creator-picker-screen">
+      <StatusBar />
+      <header className="creator-picker-header">
+        <button type="button" onClick={onClose} aria-label="Close">×</button>
+        <span>Recents <small>⌄</small></span>
+      </header>
+      <nav className="creator-picker-tabs" aria-label="Media types">
+        <span>All</span><span>Videos</span><span>Photos</span><span>Live Photos</span>
+      </nav>
+      <div className="creator-media-grid">
+        {creatorLibrary.map((name, index) => {
+          const order = selected.indexOf(index)
+          return <button type="button" key={index} onClick={() => choose(index)} aria-label={`Select cooking clip ${index + 1}`} aria-pressed={order !== -1}>
+            <img src={`${assets}/${name}`} alt="" />
+            <span className={`creator-media-check ${order !== -1 ? "selected" : ""}`}>{order !== -1 ? order + 1 : ""}</span>
+            <small>{index === 0 ? "Garlic toast · 00:48" : "00:12"}</small>
+          </button>
+        })}
+      </div>
+      <footer className="creator-picker-footer">
+        <button type="button" className={multiple ? "multiple-active" : ""} onClick={() => { setMultiple((current) => !current); setSelected((current) => current.slice(0, 1)) }}>Select multiple</button>
+        <PrimaryButton onClick={onNext} disabled={selected.length === 0}>Next ({selected.length})</PrimaryButton>
+      </footer>
+      <div className="creator-home-indicator" aria-hidden="true" />
+    </main>
+  )
+}
 
 function CreatorPublish({
   recipeAdded,
@@ -1012,29 +1068,35 @@ function CreatorPublish({
   onPost: () => void
 }) {
   const [audience, setAudience] = useState("Everyone")
+  const [showMore, setShowMore] = useState(false)
   return (
-    <main className="post-preview creator-publish">
-      <StatusBar light />
-      <div className="post-media">
-        <img src={`${assets}/012d6.png`} alt="Garlic butter toast video cover" />
-        <IconButton src="126d9.svg" label="Back" onClick={onBack} />
-      </div>
-      <section className="post-form">
-        <textarea value={caption} onChange={(event) => onCaption(event.target.value)} aria-label="Video caption" />
-        {recipeAdded ? (
-          <div className="linked-recipe">
-            <img src={`${assets}/012d6.png`} alt="" />
-            <span><small>Recipe attached</small><strong>{recipeTitle}</strong><em>5 guided steps</em></span>
-            <button type="button" onClick={onRemoveRecipe} aria-label="Remove recipe">×</button>
-          </div>
-        ) : (
-          <button type="button" className="post-option creator-recipe-entry" onClick={onAddRecipe}><span>Add step-by-step guide</span><span>›</span></button>
-        )}
-        {recipeAdded && <button type="button" className="post-option" onClick={onEditRecipe}><span>Edit recipe</span><span>›</span></button>}
-        <button type="button" className="post-option" onClick={() => setAudience(audience === "Everyone" ? "Friends" : audience === "Friends" ? "Only you" : "Everyone")}><span>Who can view this post</span><span>{audience} ›</span></button>
-        <p className="creator-simulation-note">AI generation and publishing are simulated.</p>
+    <main className="light-screen creator-post-screen">
+      <StatusBar />
+      <IconButton src="126d9.svg" label="Back to selection" onClick={onBack} className="creator-post-back" />
+      <section className="creator-post-scroll">
+        <div className="creator-post-compose">
+          <textarea value={caption} onChange={(event) => onCaption(event.target.value)} aria-label="Video caption" />
+          <div className="creator-post-cover"><img src={`${assets}/012d6.png`} alt="Selected garlic butter toast cover" /><span>Edit cover</span></div>
+        </div>
+        <div className="creator-post-tags"># Hashtags&nbsp;&nbsp;&nbsp;&nbsp; @ Mention</div>
+        <div className="creator-post-settings">
+          <div className="creator-post-row"><span>⌖&nbsp; Add location</span><span aria-hidden="true">›</span></div>
+          <div className="creator-post-row"><span>＋&nbsp; Add link</span><span aria-hidden="true">›</span></div>
+          {recipeAdded ? (
+            <div className="creator-post-row creator-recipe-row attached">
+              <button type="button" onClick={onEditRecipe}><span>Recipe attached · {recipeTitle}<small>5 guided steps · Edit recipe</small></span><span aria-hidden="true">›</span></button>
+            </div>
+          ) : (
+            <div className="creator-post-row creator-recipe-row"><button type="button" onClick={onAddRecipe}><span>Add step-by-step guide</span><span aria-hidden="true">›</span></button></div>
+          )}
+          <button type="button" className="creator-post-row" onClick={() => setAudience(audience === "Everyone" ? "Friends" : audience === "Friends" ? "Only you" : "Everyone")}><span>{audience} can view this post</span><span aria-hidden="true">›</span></button>
+          <button type="button" className="creator-post-row more" onClick={() => setShowMore(true)}><span>•••&nbsp; More options<small>Privacy and more settings</small></span><span aria-hidden="true">›</span></button>
+          <div className="creator-post-row share"><span>Share to</span><span aria-hidden="true">›</span></div>
+        </div>
       </section>
-      <footer className="post-footer"><PrimaryButton variant="secondary" onClick={onBack}>Drafts</PrimaryButton><PrimaryButton onClick={onPost}>Post</PrimaryButton></footer>
+      <footer className="creator-post-footer"><PrimaryButton variant="secondary" onClick={onBack}>Drafts</PrimaryButton><PrimaryButton onClick={onPost}>Post</PrimaryButton></footer>
+      {showMore && <div className="creator-more-overlay" onClick={() => setShowMore(false)}><div className="creator-more-sheet" role="dialog" aria-label="More options" onClick={(event) => event.stopPropagation()}><h2>More options</h2>{recipeAdded && <button type="button" onClick={() => { onRemoveRecipe(); setShowMore(false) }}>Remove recipe</button>}<button type="button" onClick={() => setShowMore(false)}>Done</button></div></div>}
+      <div className="creator-home-indicator" aria-hidden="true" />
     </main>
   )
 }
@@ -1043,13 +1105,22 @@ function CreatorAI({ onDone, onBack }: { onDone: () => void; onBack: () => void 
   const onDoneRef = useRef(onDone)
   onDoneRef.current = onDone
   useEffect(() => {
-    const timeout = window.setTimeout(() => onDoneRef.current(), 1300)
+    const timeout = window.setTimeout(() => onDoneRef.current(), 2300)
     return () => window.clearTimeout(timeout)
   }, [])
   return (
     <main className="light-screen creator-ai">
       <AppHeader title="Add recipe" onBack={onBack} />
-      <section><small>AI GUIDE DRAFT</small><h1>Creating your guide</h1><p>Review the details before attaching it to your post.</p><ol><li>Identifying ingredients</li><li>Organizing steps</li><li>Matching video clips</li></ol><p>AI generation is simulated.</p></section>
+      <section className="creator-ai-content scroll-content">
+        <img className="creator-ai-image" src={`${assets}/012d6.png`} alt="Garlic butter toast being analyzed" />
+        <small>AI GUIDE DRAFT</small>
+        <h1>Creating your guide</h1>
+        <p>Review the details before attaching it to your post.</p>
+        <div className="creator-ai-tasks"><span>Identifying ingredients&nbsp; · &nbsp;Done</span><span>Organizing steps&nbsp; · &nbsp;Done</span><span>Matching video clips&nbsp; · &nbsp;Working...</span></div>
+        <div className="creator-ai-progress"><span /></div>
+      </section>
+      <footer className="creator-ai-footer"><PrimaryButton onClick={() => undefined} disabled>Creating guide...</PrimaryButton></footer>
+      <div className="creator-home-indicator" aria-hidden="true" />
     </main>
   )
 }
@@ -1059,13 +1130,17 @@ function CreatorEditor({
   setRecipe,
   onBack,
   onConfirm,
+  onRemove,
 }: {
   recipe: CreatorRecipe
   setRecipe: React.Dispatch<React.SetStateAction<CreatorRecipe>>
   onBack: () => void
   onConfirm: () => void
+  onRemove: () => void
 }) {
   const [error, setError] = useState(false)
+  const temperatureRef = useRef<HTMLInputElement>(null)
+  const missingStepRef = useRef<HTMLDivElement>(null)
   const setIngredient = (index: number, key: "name" | "amount" | "unit", value: string) => {
     setRecipe((current) => ({ ...current, ingredients: current.ingredients.map((item, i) => i === index ? { ...item, [key]: key === "amount" ? Number(value) || 0 : value } : item) }))
   }
@@ -1079,15 +1154,13 @@ function CreatorEditor({
         <h1>Make it yours.</h1><p>Review what AI found and add anything missing.</p>
         <section><h2>Guide details</h2><label>Recipe name<input value={recipe.title} onChange={(event) => setRecipe((current) => ({ ...current, title: event.target.value }))} /></label></section>
         <section><h2>Ingredients</h2>{recipe.ingredients.map((item, index) => <div className="creator-ingredient-fields" key={index}><input aria-label={`Ingredient ${index + 1}`} value={item.name} onChange={(event) => setIngredient(index, "name", event.target.value)} /><input aria-label={`Amount ${index + 1}`} type="number" min="0" step="0.5" value={item.amount} onChange={(event) => setIngredient(index, "amount", event.target.value)} /><input aria-label={`Unit ${index + 1}`} value={item.unit} onChange={(event) => setIngredient(index, "unit", event.target.value)} /></div>)}</section>
-        <section><h2>Steps</h2>{recipe.steps.map((item, index) => <div className="creator-step-fields" key={index}><strong>Step {index + 1}</strong><input aria-label={`Step ${index + 1} title`} value={item.title} onChange={(event) => setStep(index, "title", event.target.value)} /><textarea aria-label={`Step ${index + 1} instructions`} value={item.instruction} onChange={(event) => setStep(index, "instruction", event.target.value)} />{index === 3 && <div className="creator-missing"><strong>Needs your input</strong><p>The video does not state an oven temperature.</p><label>Oven temperature<input value={recipe.temperature} placeholder="e.g. 200°C" onChange={(event) => { setRecipe((current) => ({ ...current, temperature: event.target.value })); setError(false) }} /></label>{error && <small>Add the temperature to continue.</small>}</div>}</div>)}</section>
+        <section><h2>Steps</h2>{recipe.steps.map((item, index) => <div className={`creator-step-fields ${index === 3 ? "creator-step-needs-input" : ""}`} ref={index === 3 ? missingStepRef : undefined} key={index}><strong>Step {index + 1}</strong><input aria-label={`Step ${index + 1} title`} value={item.title} onChange={(event) => setStep(index, "title", event.target.value)} /><textarea aria-label={`Step ${index + 1} instructions`} value={item.instruction} onChange={(event) => setStep(index, "instruction", event.target.value)} />{index === 3 && <div className={`creator-missing ${error ? "has-error" : ""}`}><strong>{recipe.temperature.trim() ? "Oven temperature" : "Needs your input"}</strong><p>{recipe.temperature.trim() ? "Temperature added to this step." : "The video does not state an oven temperature."}</p><label>Oven temperature<input ref={temperatureRef} value={recipe.temperature} placeholder="Add temperature" onChange={(event) => { setRecipe((current) => ({ ...current, temperature: event.target.value })); setError(false) }} /></label>{error && <small>Add the temperature to continue.</small>}</div>}</div>)}</section>
+        <button type="button" className="creator-remove-recipe" onClick={onRemove}>Remove recipe</button>
       </div>
-      <footer className="creator-editor-footer"><PrimaryButton onClick={() => { if (!recipe.temperature.trim()) { setError(true); return } onConfirm() }}>Attach recipe</PrimaryButton></footer>
+      <footer className="creator-editor-footer"><PrimaryButton onClick={() => { if (!recipe.temperature.trim()) { setError(true); missingStepRef.current?.scrollIntoView({ behavior: "auto", block: "start" }); return } onConfirm() }}>Finish editing</PrimaryButton></footer>
+      <div className="creator-home-indicator" aria-hidden="true" />
     </main>
   )
-}
-
-function CreatorPublished({ recipeAdded, onViewPost }: { recipeAdded: boolean; onViewPost: () => void }) {
-  return <main className="published-screen creator-published"><StatusBar light /><img src={`${assets}/012d6.png`} alt="Garlic butter toast" /><div className="published-shade" /><section><div className="success-mark">✓</div><h1>Post published</h1><p>{recipeAdded ? "Your recipe is attached. Viewers can cook along." : "This video has no recipe attached."}</p><PrimaryButton onClick={onViewPost}>View post</PrimaryButton><small>Publishing is simulated.</small></section></main>
 }
 
 function App() {
@@ -1126,7 +1199,6 @@ function App() {
       "creator-publish": "creator-picker" as Screen,
       "creator-ai": "creator-publish" as Screen,
       "creator-editor": "creator-publish" as Screen,
-      "creator-published": "creator-publish" as Screen,
       home: "home" as Screen,
     }),
     [currentStep],
@@ -1204,7 +1276,7 @@ function App() {
         setServings={setServings}
         onBack={() => setScreen("home")}
         onStart={() => setScreen("ingredients")}
-        recipe={creatorRecipe}
+        recipe={feedKind === "creator" ? creatorRecipe : originalRecipe}
         author={feedKind === "creator" ? "@you" : "@ellacooks"}
       />
     )
@@ -1218,7 +1290,7 @@ function App() {
         setChecked={setCheckedIngredients}
         onBack={() => setScreen(currentStep > 0 ? "cook" : "recipe")}
         onStart={() => setScreen("cook")}
-        recipe={creatorRecipe}
+        recipe={feedKind === "creator" ? creatorRecipe : originalRecipe}
       />
     )
   }
@@ -1235,7 +1307,7 @@ function App() {
         setTimerState={changeTimerState}
         timerSeconds={timerSeconds}
         setTimerSeconds={setTimerSeconds}
-        recipe={creatorRecipe}
+        recipe={feedKind === "creator" ? creatorRecipe : originalRecipe}
         clipProgress={clipProgress}
         clipPlaying={clipPlaying}
         onToggleClip={() => setClipPlaying((value) => !value)}
@@ -1281,19 +1353,16 @@ function App() {
     )
   }
   if (screen === "creator-picker") {
-    return <PostPicker onClose={() => setScreen("home")} onNext={() => setScreen("creator-publish")} initialCamera={false} />
+    return <CreatorPicker onClose={() => setScreen("home")} onNext={() => setScreen("creator-publish")} />
   }
   if (screen === "creator-publish") {
-    return <CreatorPublish recipeAdded={creatorRecipeAdded} recipeTitle={creatorRecipe.title} caption={creatorCaption} onCaption={setCreatorCaption} onBack={() => setScreen("creator-picker")} onAddRecipe={() => setScreen("creator-ai")} onEditRecipe={() => setScreen("creator-editor")} onRemoveRecipe={() => setCreatorRecipeAdded(false)} onPost={() => { setRecipeLinked(creatorRecipeAdded); setFeedKind("creator"); setScreen("creator-published") }} />
+    return <CreatorPublish recipeAdded={creatorRecipeAdded} recipeTitle={creatorRecipe.title} caption={creatorCaption} onCaption={setCreatorCaption} onBack={() => setScreen("creator-picker")} onAddRecipe={() => setScreen("creator-ai")} onEditRecipe={() => setScreen("creator-editor")} onRemoveRecipe={() => setCreatorRecipeAdded(false)} onPost={() => { setRecipeLinked(creatorRecipeAdded); setFeedKind("creator"); setScreen("home") }} />
   }
   if (screen === "creator-ai") {
     return <CreatorAI onBack={() => setScreen("creator-publish")} onDone={() => setScreen("creator-editor")} />
   }
   if (screen === "creator-editor") {
-    return <CreatorEditor recipe={creatorRecipe} setRecipe={setCreatorRecipe} onBack={() => setScreen("creator-publish")} onConfirm={() => { setCreatorRecipeAdded(true); setScreen("creator-publish") }} />
-  }
-  if (screen === "creator-published") {
-    return <CreatorPublished recipeAdded={creatorRecipeAdded} onViewPost={() => setScreen("home")} />
+    return <CreatorEditor recipe={creatorRecipe} setRecipe={setCreatorRecipe} onBack={() => setScreen("creator-publish")} onConfirm={() => { setCreatorRecipeAdded(true); setScreen("creator-publish") }} onRemove={() => { setCreatorRecipeAdded(false); setScreen("creator-publish") }} />
   }
   return <PublishedScreen onDone={() => setScreen("home")} recipeTitle={creatorRecipe.title} />
 }
